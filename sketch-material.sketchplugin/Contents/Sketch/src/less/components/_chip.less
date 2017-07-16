@@ -1,0 +1,72 @@
+.radio-row {
+  margin-bottom: 24px;
+}
+
+.output-panel {
+  padding-top: 16px;
+  padding-left: 8px;
+}
+
+.radio-row .chip {
+  margin-top: -8px;
+}
+
+.chip, .tag {
+  background: #E0E0E0;
+  font-family: Roboto-Regular;
+  font-size: 13px;
+  color: #fff;
+
+  background: #E0E0E0;
+  border-radius: 300px;
+  padding: 9px 31px 9px 11px;
+  display: inline-block;
+  line-height: 1;
+
+  position: relative;
+
+  .remove-button, a {
+    position: absolute;
+    right: 8px;
+    top: 7.5px;
+  }
+
+  a {
+    background: url('../img/chip-remove-dark.svg');
+    height: 16px;
+    width: 16px;
+    display: block;
+    text-indent: -999em;
+  }
+
+  span {
+    color: #535353;
+  }
+
+  &.normal {
+    color: #535353;
+  }
+
+  &.hovered {
+    background: #BDBDBD;
+    color: #fff;
+  }
+
+  &.pressed {
+    background: #BDBDBD;
+    box-shadow: 0 0 8px 0 rgba(121,96,96,0.12), 0 8px 8px 0 rgba(64,50,50,0.24);
+  }
+
+  &.focused {
+    background: #757575;
+  }
+
+  &.colored {
+    background: #4184F3;
+  }
+
+  &.colorfocused {
+    background: #3266D5;
+  }
+
+}

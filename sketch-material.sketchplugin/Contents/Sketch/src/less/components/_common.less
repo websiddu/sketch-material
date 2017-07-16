@@ -1,0 +1,144 @@
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #efefef;
+  background-clip: initial;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html, body {
+  font-family:  "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  background: #f5f5f5;
+  -webkit-user-select: none;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.top-panel {
+  height: 40px;
+  background: #3f51b5;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 16px;
+  font-weight: 500;
+  -webkit-user-select: none;
+}
+
+.muted {
+  color: #888;
+}
+
+.small {
+  font-size: 11px;
+}
+
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.settings-panel {
+  height: 100vh;
+  padding: 20px 16px;
+  width: 230px;
+  z-index: 100;
+  background: #fff;
+  border-right: solid 1px #eee;
+  -webkit-user-select: none;
+}
+
+.output-panel {
+  position: fixed;
+  right: 0;
+  left: 270px;
+  bottom: 70px;
+  top: 40px;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.block__header {
+    font-weight: bold;
+    font-size: 13px;
+    padding: 5px 24px;
+    margin: 0 -24px;
+    /*border-bottom: solid 1px #ccc;
+    border-top: solid 1px #ccc;*/
+}
+
+.is-pulled-right {
+  float: right;
+}
+
+.mdl-textfield {
+}
+
+.full label.mdl-textfield__label {
+  font-size: 0.8rem;
+}
+
+.full .mdl-textfield__input {
+  font-size: 0.8rem;
+  font-family: "Inconsolata", "Consolas", "Monaco", monospace;
+}
+
+.block__footer {
+    position: fixed;
+    left: 263px;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    border-top: solid 1px #eee;
+    padding: 16px 24px;
+    // box-shadow: 0 0 5px rgba(136, 136, 136, 0.16);
+    z-index: 10;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.mdl-checkbox__label, .mdl-radio__label {
+  font-size: 13px;
+}
+
+.mdl-radio {
+  margin-right: 10px;
+  display: inline-block;
+  width: 100%;
+}
+
+.mdl-textfield__input {
+  font-size: 13px;
+  label {
+    font-size: 13px;
+  }
+}
+
+.mdl-textfield__label {
+  font-size: 13px;
+}
+
+.form-field-label {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #555;
+}

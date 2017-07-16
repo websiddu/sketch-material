@@ -1,0 +1,49 @@
+@import "scripts/common.js";
+@import "scripts/MochaJSDelegate.js";
+
+// Init
+function commandInit(context) { MD.init(context, "init"); }
+
+// Buttons
+function commandButtonFlat(context) { MD.init(context, 'generate-button', 'flat')}
+function commandButtonFlatPressed(context) { MD.init(context, 'generate-button', 'flat,pressed')}
+function commandButtonFlatDisabled(context) { MD.init(context, 'generate-button', 'flat,disabled')}
+function commandButtonRaised(context) { MD.init(context, 'generate-button', 'raised')}
+function commandButtonRaisedPressed(context) { MD.init(context, 'generate-button', 'raised,pressed')}
+function commandButtonRaisedDisabled(context) { MD.init(context, 'generate-button', 'raised,disabled')}
+
+// Chips
+function commandChips(context) { MD.init(context, "generate-chips"); }
+
+// Dialogs
+function commandDialogs(context) { MD.init(context, "generate-dialogs"); }
+
+// Forms
+function commandForms(context) { MD.init(context, "forms"); }
+
+// Snackbars
+function commandSnackbars(context) { MD.init(context, "generate-snackbars"); }
+
+// Table
+function commandTable(context) { MD.init(context, "generate-table"); }
+
+// Tooltip
+function commandTooltip(context) { MD.init(context, "generate-tooltip"); }
+
+// Typogrpahy
+function commandTypography(context) { MD.init(context, "typography"); }
+
+// Shadows
+function commandElevation00(context) { MD.init(context, "apply-elevation", "00"); }
+function commandElevation01(context) { MD.init(context, "apply-elevation", "01"); }
+function commandElevation02(context) { MD.init(context, "apply-elevation", "02"); }
+function commandElevation04(context) { MD.init(context, "apply-elevation", "04"); }
+function commandElevation06(context) { MD.init(context, "apply-elevation", "06"); }
+function commandElevation08(context) { MD.init(context, "apply-elevation", "08"); }
+function commandElevation16(context) { MD.init(context, "apply-elevation", "16"); }
+
+// Form
+function commandForm(context) { MD.init(context, "generate-form"); }
+
+// Icons
+function commandIcons(context) { MD.init(context, "importer"); }

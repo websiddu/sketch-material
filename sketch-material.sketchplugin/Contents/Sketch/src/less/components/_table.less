@@ -1,0 +1,244 @@
+.table__container {
+  margin: 20px 10px;
+}
+
+.htCore {
+  tbody {
+    tr {
+      &:first-child {
+        td {
+          font-weight: bold;
+          color: #888;
+        }
+      }
+    }
+  }
+}
+
+.htContextMenu {
+  tbody {
+      tr {
+        &:first-child {
+          td {
+            font-weight: normal;
+            color: inherit;
+          }
+        }
+      }
+    }
+}
+
+.toolbar {
+  height: auto;
+  min-height: auto;
+  margin: 8px;
+  width: auto;
+  position: fixed;
+
+  .mdl-grid {
+   .mdl-cell-btn {
+     margin-right: 16px;
+   }
+  }
+  i {
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.50);
+  }
+  button {
+    color: rgba(0, 0, 0, 0.70);
+  }
+}
+
+.table {
+  border-radius: 2px;
+    &:hover {
+    .grip {
+      // border-right: solid 1px blue;
+      height: 48px;
+      // margin-left: 5.5px;
+    }
+  }
+}
+
+.mdl-data-table {
+  border: 0;
+  margin: 0 8px 8px;
+  border-radius: 0 0 2px 2px;
+
+  th {
+    border-top: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, .10);
+    padding-bottom: 12px;
+    border-right: 1px solid rgba(0, 0, 0, 0.10);
+    // text-indent: 24px;
+    .menu {
+      position: absolute;
+      left: -8px;
+      top: 8px;
+    }
+  }
+
+  tr {
+    td, th {
+      &:last-child {
+        border-right: 0;
+      }
+    }
+  }
+
+  td {
+    border-top: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, .05);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    // text-indent: 24px;
+  }
+
+  &.large {
+
+  }
+
+
+  &.medium {
+
+  }
+
+
+  // Small
+  &.small {
+
+
+  }
+
+}
+
+.md-table-toolbar {
+  border-bottom: 0;
+  font-size: 20px;
+  letter-spacing: .005em;
+  font-weight: 400;
+  max-height: 64px;
+  padding: 22px 16px;
+  margin: 0;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 -1px 5px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 2px 2px 0 0;
+  line-height: 1;
+}
+
+// Table resizers
+.JCLRgrip .JColResizer {
+  left: 6.5px;
+}
+
+
+.mini-table {
+  width: 225px;
+  min-height: 100px;
+  opacity: 0.4;
+  transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.mini-table-row {
+  height: 40px;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.12);
+  display: flex;
+  transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+  &:last-child {
+    border-bottom: 0;
+  }
+  position: relative;
+  align-items: center;
+}
+
+.mini-table-body {
+  &.S {
+    .mini-table-row {
+      height: 27px;
+    }
+  }
+  &.M {
+    .mini-table-row {
+      height: 35px;
+    }
+  }
+  &.L {
+    .mini-table-row {
+      height: 43px;
+    }
+  }
+}
+
+.mini-table-caption {
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1;
+  span {
+    position: relative;
+    transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+    &.hide {
+      &:before {
+        width: 0;
+      }
+    }
+      &:before {
+      transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+      display: block;
+      content: '';
+      height: 10px;
+      width: 60px;
+      background: transparent;
+      position: absolute;
+      z-index: 1;
+      top: 8px;
+      background: rgba(0, 0, 0, .30);
+    }
+  }
+}
+
+.min-table-footer {
+  height: 40px;
+  border-top: solid 1px rgba(0, 0, 0, 0.12);
+  line-height: 40px;
+  text-align: right;
+  transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+  &.hide {
+    height: 0;
+  }
+}
+
+.checkbox {
+  height: 9px;
+  width: 9px;
+  border: solid 2px rgba(0, 0, 0, 0.50);
+  border-radius: 2px;
+  margin-left: 12px;
+  transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+  // position: absolute;
+  // top: 8px;
+  align-items: center;
+  position: relative;
+  &.hide {
+    border-color: transparent;
+    &:before {
+      height: 9px;
+      background: rgba(0, 0, 0, .30);
+      box-shadow: 0 0 rgba(0, 0, 0, .30),
+        25px 0 rgba(0, 0, 0, .30),
+        75px 0 rgba(0, 0, 0, .30),
+        125px 0 rgba(0, 0, 0, .30);
+    }
+  }
+  &:before {
+    display: block;
+    content: '';
+    height: 10px;
+    width: 25px;
+    transition: all 0.33s cubic-bezier(0.4, 0.0, 0.2, 1);
+
+    box-shadow: 25px 0 rgba(0, 0, 0, .30),
+      50px 0 rgba(0, 0, 0, .30),
+      97px 0 rgba(0, 0, 0, .30),
+      150px 0 rgba(0, 0, 0, .30);
+  }
+}

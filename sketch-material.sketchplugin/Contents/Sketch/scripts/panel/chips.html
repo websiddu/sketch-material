@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD – Table Generator</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/index.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-panel">
+      <span>Chip Generator</span>
+    </div>
+    <div class="row-panel">
+          <div class="settings-panel">
+            <div class="form-field">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 60%;">
+                <input class="mdl-textfield__input" value=450 type="number" pattern="-?[0-9]*(\.[0-9]+)?" id="sample4">
+                <label class="mdl-textfield__label" for="sample4">Container width</label>
+                <span class="mdl-textfield__error">Input is not a number!</span>
+              </div>
+          </div>
+
+            <!--<div class="form-field">
+                <label class="mdl-checkbox mdl-js-checkbox" for="hasIcon">
+                  <input type="checkbox" id="hasIcon" class="mdl-checkbox__input">
+                  <span class="mdl-checkbox__label">Show icon</span>
+                </label>
+              </div>-->
+
+            <div class="form-field">
+                <div class="form-field-label">Chip style <span class="muted small"></span> </div>
+
+                <div class="radio-row" style="margin-top: 10px;">
+                  <label class="mdl-radio mdl-js-radio" for="layout1">
+                    <input checked class="mdl-radio__button" id="layout1" name="layout" type="radio" value='layout1'>
+                    <div class="chip normal">Normal chip <img class='remove-button' src="assets/img/chip-remove-dark.svg" alt=""></div>
+                  </label>
+                </div>
+                <div class="radio-row">
+                  <label class="mdl-radio mdl-js-radio" for="layout2">
+                    <input class="mdl-radio__button" id="layout2" name="layout" type="radio" value='layout2'>
+                  <div class="chip hovered">Hovered chip <img class='remove-button' src="assets/img/chip-remove-light.svg" alt=""></div>
+                  </label>
+                </div>
+
+                <div class="radio-row">
+                  <label class="mdl-radio mdl-js-radio" for="layout3">
+                    <input class="mdl-radio__button" id="layout3" name="layout" type="radio" value='layout3'>
+                  <div class="chip pressed">Pressed chip <img class='remove-button' src="assets/img/chip-remove-light.svg" alt=""></div>
+                  </label>
+                </div>
+
+                <div class="radio-row">
+                  <label class="mdl-radio mdl-js-radio" for="layout4">
+                    <input class="mdl-radio__button" id="layout4" name="layout" type="radio" value='layout4'>
+                  <div class="chip focused">Focused chip <img class='remove-button' src="assets/img/chip-remove-light.svg" alt=""></div>
+                  </label>
+                </div>
+
+
+                <div class="radio-row">
+                  <label class="mdl-radio mdl-js-radio" for="layout5">
+                    <input class="mdl-radio__button" id="layout5" name="layout" type="radio" value='layout5'>
+                  <div class="chip colored">Colored chip <img class='remove-button' src="assets/img/chip-remove-light.svg" alt=""></div>
+                  </label>
+                </div>
+
+                <div class="radio-row">
+                  <label class="mdl-radio mdl-js-radio" for="layout6">
+                    <input class="mdl-radio__button" id="layout6" name="layout" type="radio" value='layout6'>
+                  <div class="chip colorfocused">Colored focus chip <img class='remove-button' src="assets/img/chip-remove-light.svg" alt=""></div>
+                  </label>
+                </div>
+
+            </div>
+          </div>
+          <div class="output-panel">
+            <input id="tags" type="text" class="tags" value="foo,bar,baz,roffle" />
+          </div>
+          <div class="block__footer">
+            <div class="actions is-pulled-right">
+              <button id="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">Generate</button>
+            </div>
+          </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="assets/js/components/analytics.js"></script>
+  <script>
+    ga('send', 'pageview', 'chips');
+  </script>
+  <script type="text/javascript" src="assets/js/lib/jquery-2.2.4.min.js"></script>
+  <script type="text/javascript" src="assets/js/lib/material.min.js"></script>
+  <script type="text/javascript" src="assets/js/lib/jquery.taginput.js"></script>
+
+  <script type="text/javascript" src="assets/js/common.js"></script>
+  <script type="text/javascript" src="assets/js/components/chip.js"></script>
+</body>
+
+
+
+</html>

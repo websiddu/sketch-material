@@ -1,0 +1,12 @@
+function openURL(url){
+  var nsurl = NSURL.URLWithString(url);
+  NSWorkspace.sharedWorkspace().openURL(nsurl)
+}
+
+function linkSite(){
+  openURL('https://websiddu.github.io/sketch-material/');
+}
+
+function linkDocumentation(){
+  openURL('https://websiddu.github.io/sketch-material/help.html');
+}
