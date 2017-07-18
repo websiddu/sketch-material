@@ -1,7 +1,7 @@
 {
   "name": "Sketch Material",
-  "identifier": "com.sketch.material",
-  "version": "0.1.6",
+  "identifier": "com.websiddu.sketch.material",
+  "version": "0.1.7",
   "description": "Sketch material is a sketch plugin that will help you generate complex material components like tables, chips, forms etc…",
   "appcast": "https://sketch-material.firebaseapp.com/static/sketch/appcast.xml",
   "authorEmail": "siddu.siddhartha@google.com",
@@ -51,7 +51,7 @@
         ]
       }
     ],
-    "title": "Sketch Material"
+    "title": "✨ Sketch Material"
   },
   "commands": [
     {
@@ -138,7 +138,7 @@
       "script": "md.sketchscript"
     },
     {
-      "name": "Typograhy...",
+      "name": "Typography...",
       "identifier": "commandTypography",
       "handler": "commandTypography",
       "script": "md.sketchscript"

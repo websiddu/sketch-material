@@ -3,6 +3,12 @@
 
 Sketch material is a sketch plugin that will help you generate complex material components like tables, chips, forms etc…
 
+## Requirement
+
+- Sketch 45 or above
+- Mac OS 10.12.5 or above
+
+
 ## Watch in action
 
 ![Tables](https://websiddu.github.io/sketch-material/images/tables.gif)
