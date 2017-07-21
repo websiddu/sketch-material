@@ -9,8 +9,6 @@ var MD = {
     this.version = this.context.plugin.version() + "";
     this.MDVersion = this.prefs.stringForKey("MDVersion") + "" || 0;
 
-    this.baseUrl = "https://sketch-material.firebaseapp.com";
-
     this.extend(context);
     this.pluginRoot = this.scriptPath
       .stringByDeletingLastPathComponent()
@@ -21,6 +19,7 @@ var MD = {
 
     coscript.setShouldKeepAround(false);
 
+    this.baseUrl = "https://sketch-material.firebaseapp.com";
 
     if (command && command == "init") {
       // this.menu();
@@ -70,12 +69,20 @@ var MD = {
         case "typography":
           this.Typography().showTypographyPanel();
         break;
+        case "color":
+          this.Color().showColorPanel();
+        break;
+        case "imagery":
+          this.Imagery().showImageryPanel(args);
+        break;
         case "forms":
           this.Forms().generateForms();
         break;
-        case "settings":
-          this.settingsPanel();
-          break;
+        case "libraries":
+          this.Library().showLibrariesPanel();
+        case "generate-menu":
+          this.Menu().generateMenu();
+        break;
         case "export":
           this.export();
           break;
@@ -439,6 +446,23 @@ MD.extend({
   openURL: function(url){
     var nsurl = NSURL.URLWithString(url);
     NSWorkspace.sharedWorkspace().openURL(nsurl)
+  },
+  getLayerIDsOfOverrides: function(instance, symbolMaster, overridesFieldNames) {
+    // var symbolMaster = instance.symbolMaster();
+    var children = symbolMaster.children();
+    var layerIDs = {};
+
+    for (var i = 0; i < children.count(); i++){
+      var layer = children[i];
+      for(var j = 0; j < overridesFieldNames.length; j++) {
+        var overridesID = overridesFieldNames[j];
+        if(layer.name() == overridesFieldNames[j] ) {
+          layerIDs[overridesID] = layer.objectID();
+          break;
+        }
+      }
+    }
+   return layerIDs;
   }
 });
 
@@ -481,6 +505,26 @@ MD.extend({
             b: this.toHex(result[3])/255,
             a: alpha || 1
         } : null;
+    },
+    hexToMSColor: function(hex, alpha) {
+
+        var r = parseInt(hex.substring(1, 3), 16) / 255,
+            g = parseInt(hex.substring(3, 5), 16) / 255,
+            b = parseInt(hex.substring(5, 7), 16) / 255,
+            a = 1;
+
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+    },
+    rgbaToMSColor: function(rgba) {
+        rgba = rgba.replace('rgba(', '').replace(')', '');
+        rgba = rgba.split(',');
+
+        var r = parseFloat(rgba[0]) / 255,
+            g = parseFloat(rgba[1]) / 255,
+            b = parseFloat(rgba[2]) / 255,
+            a = parseFloat(rgba[3]);
+
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     hexToRgb:function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -683,17 +727,7 @@ MD.extend({
             } else {
             return object;
         }});
-
-        // for(var i = 0; i < array.length; i++) {
-        //     var object = array[i];
-        //     if (MD.isImmutableSketchObject(object)) {
-        //         array[i] = MD.mutableSketchObject(object);
-        //     }
-        // }
-
-        // return array;
-
-    }
+    },
 
 });
 
@@ -961,6 +995,23 @@ MD.extend({
 
 // Panel.js
 MD.extend({
+
+  initFramework: function (context, frameworkName) {
+    var scriptPath = context.scriptPath;
+    var pluginRoot = scriptPath.stringByDeletingLastPathComponent();
+
+    pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug/";
+
+    var mocha = [Mocha sharedRuntime];
+    if (NSClassFromString(frameworkName) == null) {
+      if (![mocha loadFrameworkWithName:frameworkName inDirectory:pluginRoot]) {
+        log('An error ocurred while loading the SketchSlides Framework.');
+        return;
+      }
+    }
+    return [[ServiceManager alloc] init];
+  },
+
   createCocoaObject: function (methods, superclass) {
     var uniqueClassName = "MD.sketch_" + NSUUID.UUID().UUIDString();
     var classDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, superclass || NSObject);
@@ -1128,8 +1179,74 @@ MD.extend({
           MD.Typography().applyTypographyStyles(data);
         }
 
+        if(request == 'applyColor') {
+          var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedColor")));
+          MD.Color().applyColor(data);
+        }
+
         if (request == 'onWindowDidBlur') {
           MD.addFirstMouseAcceptor(webView, contentView);
+        }
+
+        if (request == 'fetchUser') {
+          MD.frameWork.userInfo(webView);
+        }
+
+        if (request == 'signIn') {
+          MD.frameWork.signIn(webView);
+        }
+
+        if (request == 'signOut') {
+          MD.frameWork.signOut(webView);
+        }
+
+        if (request == 'LogInSuccess') {
+          MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
+          windowObject.evaluateWebScript("window.location.href = 'libraries';");
+        }
+
+        if (request == 'getSubFolders') {
+          MD.frameWork.subFolders_webView('0B8xcNpJXhd2WMmg4cXc2aVpOV2c', webView);
+        }
+
+        if (request.startsWith('searchImages__')) {
+          var queryString = request.replace('searchImages__', '');
+          MD.frameWork.searchImages_webView(queryString, webView);
+        }
+
+        if(request.startsWith('loadImages__') > 0) {
+          var folderId = request.replace('loadImages__', '');
+          MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+        }
+
+        if(request.startsWith('loadFiles__') > 0) {
+          var folderId = request.replace('loadFiles__', '');
+          MD.frameWork.getFiles_webView(folderId, webView);
+        }
+
+        if(request == 'getLibraryFiles') {
+          MD.Library().checkLoadedLibraries(webView);
+          MD.frameWork.getFiles_commitFunction_webView('0B8xcNpJXhd2WQ3k4YUJ3MmFSWWs', 'saveLibraryFiles', webView);
+        }
+
+        if(request == 'downloadFile') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("downloadFile")));
+          MD.Library().downloadFile(file);
+        }
+
+        if(request == 'downloadComplete') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("downloadFile")));
+          MD.Library().handleDownloadComplete(file);
+        }
+
+        if(request == 'toggleFileState') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("toggleFileState")));
+          MD.Library().toggleFileState(file);
+        }
+
+        if(request == 'removeFile') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("removeFile")));
+          MD.Library().removeFile(file);
         }
 
         if (request == "close") {
@@ -1150,6 +1267,8 @@ MD.extend({
         windowObject.evaluateWebScript("window.location.hash = '';");
       })
     });
+
+
 
     webView.setFrameLoadDelegate_(delegate.getClassInstance());
     // NSButton already returns YES for -acceptsFirstMouse: so all we need to do
@@ -1197,6 +1316,8 @@ MD.extend({
       NSApp.runModalForWindow(Panel);
     }
 
+    MD.webView = webView;
+
     return result;
   },
 
@@ -1228,7 +1349,7 @@ MD.extend({
       width: 980,
       height: 700,
       data: data,
-      identifier: 'com.sketch.material.table',
+      identifier: 'com.websiddu.material.table',
       floatWindow: false,
       callback: function (data) {
         self.configs = self.setConfigs({
@@ -1243,15 +1364,33 @@ MD.extend({
       data = {};
 
     return this.MDPanel({
-      url: MD.baseUrl + "/dialogs",
+      url: this.baseUrl + "/dialogs",
       remote: true,
       width: 850,
       height: 680,
       data: data,
-      identifier: 'com.sketch.material.dialogs',
+      identifier: 'com.websiddu.material.dialogs',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.dialogsData = dataFromWebView;
+      }
+    });
+  },
+
+  menuPanel: function() {
+    var self = this,
+    data = {};
+
+    return this.MDPanel({
+      url: this.baseUrl + "/menu",
+      remote: true,
+      width: 850,
+      height: 580,
+      data: data,
+      identifier: 'com.websiddu.material.menu',
+      floatWindow: false,
+      callback: function (dataFromWebView) {
+        MD.menuData = dataFromWebView;
       }
     });
   },
@@ -1261,16 +1400,80 @@ MD.extend({
       data = {};
 
     return this.MDPanel({
-      url: MD.baseUrl + "/snackbars",
+      url: this.baseUrl + "/snackbars",
       // url: "http://localhost:8031/snackbars",
       remote: true,
       width: 850,
       height: 450,
       data: data,
-      identifier: 'com.sketch.material.snackbars',
+      identifier: 'com.websiddu.material.snackbars',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.snackbarsData = dataFromWebView;
+      }
+    });
+  },
+
+  librariesPanel: function (isAuthorized) {
+    var self = this,
+      data = {};
+
+    var url = isAuthorized ? "libraries" : "login";
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      // url: this.baseUrl + "/color",
+      url: 'http://0.0.0.0:8031/' + url,
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.libraries',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.librariesData = dataFromWebView;
+      }
+    });
+  },
+
+  imageryPanel: function (isAuthorized) {
+    var self = this,
+      data = {};
+
+    var url = isAuthorized ? "imagery" : "login";
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      // url: this.baseUrl + "/color",
+      url: 'http://0.0.0.0:8031/' + url,
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.imagery',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.imageryData = dataFromWebView;
+      }
+    });
+  },
+
+  colorPanel: function () {
+    var self = this,
+      data = {};
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      url: this.baseUrl + "/color",
+      // url: 'http://0.0.0.0:8080/',
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.color',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.colorData = dataFromWebView;
       }
     });
   },
@@ -1281,12 +1484,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/styles",
-      url: MD.baseUrl + "/styles",
+      url: this.baseUrl + "/styles",
       remote: true,
       width: 500,
       height: 600,
       data: data,
-      identifier: 'com.sketch.material.typography',
+      identifier: 'com.websiddu.material.typography',
       floatWindow: true,
       callback: function (dataFromWebView) {
         MD.typographyData = dataFromWebView;
@@ -1301,12 +1504,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/forms",
-      url: MD.baseUrl + "/forms",
+      url: this.baseUrl + "/forms",
       remote: true,
       width: 1000,
       height: 650,
       data: data,
-      identifier: 'com.sketch.material.forms',
+      identifier: 'com.websiddu.material.forms',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.formsData = dataFromWebView;
@@ -1321,12 +1524,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: this.pluginSketch + "/panel/importer/index.html",
-      url: MD.baseUrl + "/icons",
+      url: this.baseUrl + "/icons",
       remote: true,
       width: 300,
       height: 500,
       data: data,
-      identifier: 'com.sketch.material.icons',
+      identifier: 'com.websiddu.material.icons',
       floatWindow: true,
       callback: function (data) {
         // self.configs = self.setConfigs({
@@ -1345,7 +1548,7 @@ MD.extend({
       width: 600,
       height: 500,
       data: data,
-      identifier: 'com.sketch.material.resources',
+      identifier: 'com.websiddu.material.resources',
       floatWindow: true,
       callback: function (data) {
         // self.configs = self.setConfigs({
@@ -1372,6 +1575,9 @@ MD.extend({
           break;
         case "dialogs":
           this.importDialogStylesAndSymbols();
+          break;
+        case "menus":
+          this.importMenuStylesAndSymbols();
           break;
         case "snackbars":
           this.importSnackBarStylesAndSymbols();
@@ -1429,6 +1635,26 @@ MD.extend({
     // this.importSymbols('toasts', ['dialog/actions'], false);
     this.importSharedStyles(toastUrl, styles);
   },
+
+  importMenuStylesAndSymbols: function() {
+    var styles = {
+      layerStyles: ['MD/Menu/BG'],
+      textStyles: ['MD/Menu/Desktop/Dense',
+        'MD/Menu/Desktop/Dense/RTL',
+        'MD/Menu/Desktop/Normal',
+        'MD/Menu/Desktop/Normal/RTL',
+        'MD/Menu/Mobile/Dense',
+        'MD/Menu/Mobile/Normal',
+      ]
+    }
+
+    var dialogsPath = this.resources + '/menus.sketch';
+    var dialogsUrl = NSURL.fileURLWithPath(dialogsPath);
+    this.importSharedStyles(dialogsUrl, styles);
+    this.importSymbols('menus', ['MD/Menu/Mobile/Normal', 'MD/Menu/Mobile/Icon/Normal', 'MD/Menu/Mobile/Icon/Dense', 'MD/Menu/Mobile/Dense', 'MD/Menu/Desktop/Normal', 'MD/Menu/Desktop/Icon/Normal', 'MD/Menu/Desktop/Icon/Dense', 'MD/Menu/Desktop/Dense', 'MD/Menu/Divider'], false);
+
+  },
+
 
   importDialogStylesAndSymbols: function () {
     var styles = {
@@ -1664,8 +1890,6 @@ sketchObjectFromArchiveData: function(archiveData) {
     if(layer.class() == 'MSTextLayer') {
 
       var sharedStyle = layer.sharedObject();
-
-      log("shared style....");
 
       if(sharedStyle) {
         var sharedStyleName = sharedStyle.name();
@@ -2054,6 +2278,85 @@ MD['Chip'] = function () {
 };
 
 
+MD['Color'] = function () {
+
+  var _showColorPanel;
+
+  var _setBorderColor = function(layer, color) {
+    if (layer.class() == "MSShapeGroup") {
+        var borders = layer.style().enabledBorders();
+        if (borders.count() > 0 && borders.lastObject().fillType() == 0) {
+            borders.lastObject().setColor(color);
+        } else {
+            var border = layer.style().addStylePartOfType(1);
+            border.setFillType(0);
+            border.setColor(color);
+            border.setPosition(2);
+            border.setThickness(1);
+        }
+    }
+  }
+
+  var _setFillColor = function(layer, color) {
+      if (layer.class() == "MSShapeGroup") {
+          var fills = layer.style().enabledFills();
+          if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
+              fills.lastObject().setColor(color);
+          } else {
+              var fill = layer.style().addStylePartOfType(0);
+              fill.setFillType(0);
+              fill.setColor(color);
+          }
+      }
+      if (layer.class() == "MSTextLayer") {
+          layer.setTextColor(color);
+      }
+  }
+
+  _showColorPanel = function() {
+    MD.colorPanel();
+  }
+
+  _applyColor = function(rawColor) {
+
+    var doc = NSDocumentController.sharedDocumentController().currentDocument();
+    var selection = doc.selectedLayers().layers();
+
+    if (selection.count() <= 0) {
+      MD.message("Select a layer to apply color");
+    } else {
+      var selecitonLoop = selection.objectEnumerator();
+      while(sel = selecitonLoop.nextObject()) {
+        var nsColor;
+
+        if(rawColor.color.startsWith("#") > 0) {
+          nsColor = MD.hexToMSColor(rawColor.color);
+        }
+
+        if (rawColor.color.startsWith("rgba") > 0) {
+          nsColor = MD.rgbaToMSColor(rawColor.color);
+        }
+
+        if(!nsColor) {
+          MD.message("Can't find the color!");
+          return;
+        }
+
+        if(rawColor.type == 'border') {
+          _setBorderColor(sel, nsColor);
+        } else {
+          _setFillColor(sel, nsColor)
+        }
+      }
+    }
+  }
+
+  return {
+    showColorPanel: _showColorPanel,
+    applyColor: _applyColor
+  }
+}
+
 // dialog.js
 MD['Dialog'] = function () {
   var _generateDialogs, _importDialogSymbols, _buildDialog, _makeButton;
@@ -2258,9 +2561,7 @@ MD['Dialog'] = function () {
   }
 
   _importDialogSymbols = function () {
-    log("--------0")
     MD.import('dialogs');
-    log("--------1")
   }
 
   _generateDialogs = function () {
@@ -2527,7 +2828,7 @@ MD['Forms'] = function () {
   }
 
   var _updateOverrides = function(instance, symbolMaster, overridesFieldNames, field) {
-    var layerIDs = _getLayerIDs(instance, symbolMaster, overridesFieldNames);
+    var layerIDs = MD.getLayerIDsOfOverrides(instance, symbolMaster, overridesFieldNames);
     var values = instance.overrides();
     if (!values) { values = NSMutableDictionary.dictionary(); }
     var existingOverrides = values;
@@ -2540,27 +2841,23 @@ MD['Forms'] = function () {
     instance.overrides = mutableOverrides;
   };
 
-  var _getLayerIDs = function(instance, symbolMaster, overridesFieldNames) {
-    // var symbolMaster = instance.symbolMaster();
-    var children = symbolMaster.children();
-    var layerIDs = {};
-
-    for (var i = 0; i < children.count(); i++){
-      var layer = children[i];
-      for(var j = 0; j < overridesFieldNames.length; j++) {
-        var overridesID = overridesFieldNames[j];
-        if(layer.name() == overridesFieldNames[j] ) {
-          layerIDs[overridesID] = layer.objectID();
-          break;
-        }
-      }
-    }
-
-    return layerIDs;
-  };
 
   return {
     generateForms: _generateForms
+  }
+}
+
+MD['Imagery'] = function () {
+
+  var _showImageryPanel = function() {
+    MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
+    MD.frameWork.setWebView(MD.webView);
+    var isAuthorized = MD.frameWork.isAuthorized();
+    MD.imageryPanel(isAuthorized);
+  }
+
+  return {
+    showImageryPanel: _showImageryPanel,
   }
 }
 
@@ -2573,7 +2870,6 @@ MD['Importer'] = function () {
   var _convertSvgToSymbol = function (data) {
 
     var name = data.name;
-
     var selectedLayers = MD.document.selectedLayers();
     var symbolsPage = MD.document.documentData().symbolsPageOrCreateIfNecessary();
     var existingSymbol = MD.findSymbolByName(name);
@@ -2584,8 +2880,9 @@ MD['Importer'] = function () {
         droppedElement = selectedLayers.firstLayer(),
         droppedEleRect = MD.getRect(droppedElement);
 
-      MD.current.addLayers([newSymbol]);
+      newSymbol.setConstrainProportions(true);
 
+      MD.current.addLayers([newSymbol]);
       newSymbolRect.setX(droppedEleRect.x);
       newSymbolRect.setY(droppedEleRect.y);
 
@@ -2615,14 +2912,20 @@ MD['Importer'] = function () {
           layers = arr;
         }
         for (var i = 0; i < layers.count(); i++) {
+
           var layer = layers.objectAtIndex(i);
           var fill = layer.style().fills().firstObject();
           fill.color = replaceColor;
+
         }
       }
     }
 
-    MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+
+    var symbolInstanceRect = MD.getRect(symbolInstance);
+    symbolInstanceRect.setConstrainProportions(true);
+
   }
 
 
@@ -2631,6 +2934,227 @@ MD['Importer'] = function () {
     convertSvgToSymbol: _convertSvgToSymbol
   }
 }
+
+MD['Library'] = function () {
+
+  var libraryController = AppController.sharedInstance().librariesController();
+  var identifier = MSAssetLibrariesPreferencePane.identifier();
+  var paneCtrl =  MSPreferencesController.sharedController();
+
+  var _showLibrariesPanel = function() {
+    MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
+    MD.frameWork.setWebView(MD.webView);
+    var isAuthorized = MD.frameWork.isAuthorized();
+    MD.librariesPanel(isAuthorized);
+  }
+
+  var _reloadPane = function() {
+    paneCtrl.switchToPaneWithIdentifier(identifier);
+    var libPane = paneCtrl.currentPreferencePane();
+    libPane.tableView().reloadData();
+    paneCtrl.close();
+  }
+
+  var _checkLoadedLibraries = function(webView) {
+    var userLibraries = libraryController.userLibraries();
+
+    var userLibrariesJson = [];
+
+    for(var i = 0; i < userLibraries.count(); i++) {
+      var userLibrary = userLibraries[i];
+      var url = userLibrary.locationOnDisk();
+      var name = userLibrary.name();
+      var enabled = userLibrary.enabled();
+      var libraryId = userLibrary.libraryID();
+
+      userLibrariesJson.push({
+        libraryId: "" + libraryId,
+        name: "" + name,
+        url: "" + url,
+        enabled: enabled
+      });
+    }
+
+    var windowObject = webView.windowScriptObject();
+    windowObject.evaluateWebScript("vm.$store.commit('saveUserLibraryResults', '" + JSON.stringify(userLibrariesJson) + "');");
+  }
+
+  var _loadLibrary = function(fileName) {
+    var path = MD.resources + '/libraries/' + fileName;
+    var myLibUrl = NSURL.fileURLWithPath_(path);
+    libraryController.addAssetLibraryAtURL_(myLibUrl);
+    _reloadPane();
+  }
+
+  var _downloadFile = function(file) {
+    MD.frameWork.downloadDriveFile_path_webView(file.id, MD.resources + '/libraries/' + file.name, MD.webView);
+  }
+
+  var _handleDownloadComplete = function(file) {
+    _loadLibrary(file.name);
+  }
+
+  var _toggleFileState = function(file) {
+    var userLibraries = libraryController.userLibraries();
+    var libId = file.libraryId;
+    var foundFile = null;
+
+    for(var i = 0; i < userLibraries.count(); i++) {
+      if("" + userLibraries[i].libraryID() == libId) {
+        foundFile = userLibraries[i];
+        break;
+      }
+    }
+
+    if(foundFile) {
+      foundFile.enabled = !file.enabled;
+    }
+
+    _reloadPane();
+
+  }
+
+  var _removeFile = function(file) {
+    var userLibraries = libraryController.userLibraries();
+    var libId = file.libraryId;
+    var foundFile = null;
+
+    for(var i = 0; i < userLibraries.count(); i++) {
+      if("" + userLibraries[i].libraryID() == libId) {
+        foundFile = userLibraries[i];
+        break;
+      }
+    }
+
+    if(foundFile) {
+      libraryController.removeAssetLibrary(foundFile);
+    }
+
+    _reloadPane();
+
+  }
+
+  return {
+    loadLibrary: _loadLibrary,
+    showLibrariesPanel: _showLibrariesPanel,
+    downloadFile: _downloadFile,
+    handleDownloadComplete: _handleDownloadComplete,
+    checkLoadedLibraries: _checkLoadedLibraries,
+    toggleFileState: _toggleFileState,
+    removeFile: _removeFile
+  }
+}
+
+// menu.js
+MD['Menu'] = function () {
+
+  var screen, width, hasIcon, symbolName = 'MD/Menu/';
+
+
+  var _importMenuSymbols = function() {
+    MD.import('menus');
+  }
+
+  var _updateOverrides = function(instance, symbolMaster, overridesFieldNames, field) {
+    var layerIDs = MD.getLayerIDsOfOverrides(instance, symbolMaster, overridesFieldNames);
+
+    var values = instance.overrides();
+    if (!values) { values = NSMutableDictionary.dictionary(); }
+    var existingOverrides = values;
+    var mutableOverrides = NSMutableDictionary.dictionaryWithDictionary(existingOverrides)
+    var keys = Object.keys(layerIDs);
+    var i = 0;
+    for(k = 0; k < keys.length; k++) {
+      var key = keys[k];
+      if(key == 'text') {
+        i = 0;
+      }
+      if(key == 'shortcut') {
+        i = 1;
+      }
+      mutableOverrides.setObject_forKey(field[i], layerIDs[key]);
+    }
+    instance.overrides = mutableOverrides;
+  };
+
+  var _buildMenu = function() {
+
+
+    symbolName = symbolName +
+      (MD.menuData.screen == 'mobile' ? 'Mobile/' : 'Desktop/') +
+      (MD.menuData.hasIcon == 'yes' ? 'Icon/' : '') +
+      (MD.menuData.isDense == 'dense' ? 'Dense' : 'Normal');
+
+    var menuItemsGroup = MD.addGroup(),
+      menuBg = MD.addShape();
+
+    menuItemsGroup.setName('menu');
+    var menuSymbol = MD.findSymbolByName(symbolName);
+    var menuItems = [];
+    var y = 8;
+
+    for(var i = 0; i < MD.menuData.items.length; i++) {
+      var item = MD.menuData.items[i];
+      if(item[0]) {
+        var menuItem = menuSymbol.newSymbolInstance();
+        var menuItemRect = MD.getRect(menuItem);
+
+        if(item[0] == '-') {
+          var dividerSymbol = MD.findSymbolByName('MD/Menu/Divider');
+          menuItem = dividerSymbol.newSymbolInstance();
+          var divHeight = (MD.menuData.isDense == 'dense' ? 8 : 16);
+          menuItemRect = MD.getRect(menuItem);
+          menuItemRect.setHeight(divHeight);
+          menuItemRect.setY(y);
+          y = y + divHeight;
+        } else {
+          var overridesFieldNames = ['text', 'shortcut'];
+          _updateOverrides(menuItem, menuSymbol, overridesFieldNames, item);
+          menuItemRect.setY(y);
+          y = y + (MD.menuData.isDense == 'dense' ? 32 : 48);
+        }
+
+        menuItemRect.setConstrainProportions(false);
+        menuItemRect.setWidth(56 * parseInt(MD.menuData.width));
+        menuItems.push(menuItem);
+      }
+    }
+
+    menuItemsGroup.addLayers([menuBg]);
+    menuItemsGroup.addLayers(menuItems);
+    menuItemsGroup.resizeToFitChildrenWithOption(0);
+
+    var menuGroupRect = MD.getRect(menuItemsGroup);
+    var menuBgRect = MD.getRect(menuBg);
+
+    menuBgRect.setWidth(menuGroupRect.width)
+    menuBgRect.setHeight(menuGroupRect.height + 8);
+    menuBg.setStyle(MD.sharedLayerStyle('MD/Menu/BG'));
+    menuBg.layers().firstObject().setCornerRadiusFromComponents("2");
+    menuBgRect.setConstrainProportions(false);
+    menuGroupRect.setConstrainProportions(false);
+
+    menuItemsGroup.resizeToFitChildrenWithOption(0);
+
+    MD.current.addLayers([menuItemsGroup]);
+
+    menuGroupRect.setX(MD.getCenterOfViewPort().x - (menuGroupRect.width * 0.5));
+    menuGroupRect.setY(MD.getCenterOfViewPort().y - (menuGroupRect.height * 0.5));
+  }
+
+  var _generateMenu = function() {
+    if (MD.menuPanel()) {
+      _importMenuSymbols();
+      _buildMenu();
+    }
+  }
+
+  return {
+    generateMenu: _generateMenu
+  }
+
+};
+
 
 // snackbar.js
 MD['SnackBar'] = function () {

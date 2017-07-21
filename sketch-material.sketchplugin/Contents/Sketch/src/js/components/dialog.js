@@ -202,9 +202,7 @@ MD['Dialog'] = function () {
   }
 
   _importDialogSymbols = function () {
-    log("--------0")
     MD.import('dialogs');
-    log("--------1")
   }
 
   _generateDialogs = function () {

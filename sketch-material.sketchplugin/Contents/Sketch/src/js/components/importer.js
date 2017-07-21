@@ -7,7 +7,6 @@ MD['Importer'] = function () {
   var _convertSvgToSymbol = function (data) {
 
     var name = data.name;
-
     var selectedLayers = MD.document.selectedLayers();
     var symbolsPage = MD.document.documentData().symbolsPageOrCreateIfNecessary();
     var existingSymbol = MD.findSymbolByName(name);
@@ -18,8 +17,9 @@ MD['Importer'] = function () {
         droppedElement = selectedLayers.firstLayer(),
         droppedEleRect = MD.getRect(droppedElement);
 
-      MD.current.addLayers([newSymbol]);
+      newSymbol.setConstrainProportions(true);
 
+      MD.current.addLayers([newSymbol]);
       newSymbolRect.setX(droppedEleRect.x);
       newSymbolRect.setY(droppedEleRect.y);
 
@@ -49,14 +49,20 @@ MD['Importer'] = function () {
           layers = arr;
         }
         for (var i = 0; i < layers.count(); i++) {
+
           var layer = layers.objectAtIndex(i);
           var fill = layer.style().fills().firstObject();
           fill.color = replaceColor;
+
         }
       }
     }
 
-    MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+
+    var symbolInstanceRect = MD.getRect(symbolInstance);
+    symbolInstanceRect.setConstrainProportions(true);
+
   }
 
 

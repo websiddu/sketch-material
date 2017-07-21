@@ -9,8 +9,6 @@ var MD = {
     this.version = this.context.plugin.version() + "";
     this.MDVersion = this.prefs.stringForKey("MDVersion") + "" || 0;
 
-    this.baseUrl = "https://sketch-material.firebaseapp.com";
-
     this.extend(context);
     this.pluginRoot = this.scriptPath
       .stringByDeletingLastPathComponent()
@@ -21,6 +19,7 @@ var MD = {
 
     coscript.setShouldKeepAround(false);
 
+    this.baseUrl = "https://sketch-material.firebaseapp.com";
 
     if (command && command == "init") {
       // this.menu();
@@ -70,12 +69,20 @@ var MD = {
         case "typography":
           this.Typography().showTypographyPanel();
         break;
+        case "color":
+          this.Color().showColorPanel();
+        break;
+        case "imagery":
+          this.Imagery().showImageryPanel(args);
+        break;
         case "forms":
           this.Forms().generateForms();
         break;
-        case "settings":
-          this.settingsPanel();
-          break;
+        case "libraries":
+          this.Library().showLibrariesPanel();
+        case "generate-menu":
+          this.Menu().generateMenu();
+        break;
         case "export":
           this.export();
           break;

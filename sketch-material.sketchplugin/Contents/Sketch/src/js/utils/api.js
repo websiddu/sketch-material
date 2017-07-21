@@ -303,5 +303,22 @@ MD.extend({
   openURL: function(url){
     var nsurl = NSURL.URLWithString(url);
     NSWorkspace.sharedWorkspace().openURL(nsurl)
+  },
+  getLayerIDsOfOverrides: function(instance, symbolMaster, overridesFieldNames) {
+    // var symbolMaster = instance.symbolMaster();
+    var children = symbolMaster.children();
+    var layerIDs = {};
+
+    for (var i = 0; i < children.count(); i++){
+      var layer = children[i];
+      for(var j = 0; j < overridesFieldNames.length; j++) {
+        var overridesID = overridesFieldNames[j];
+        if(layer.name() == overridesFieldNames[j] ) {
+          layerIDs[overridesID] = layer.objectID();
+          break;
+        }
+      }
+    }
+   return layerIDs;
   }
 });

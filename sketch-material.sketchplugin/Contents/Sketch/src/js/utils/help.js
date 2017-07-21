@@ -38,6 +38,26 @@ MD.extend({
             a: alpha || 1
         } : null;
     },
+    hexToMSColor: function(hex, alpha) {
+
+        var r = parseInt(hex.substring(1, 3), 16) / 255,
+            g = parseInt(hex.substring(3, 5), 16) / 255,
+            b = parseInt(hex.substring(5, 7), 16) / 255,
+            a = 1;
+
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+    },
+    rgbaToMSColor: function(rgba) {
+        rgba = rgba.replace('rgba(', '').replace(')', '');
+        rgba = rgba.split(',');
+
+        var r = parseFloat(rgba[0]) / 255,
+            g = parseFloat(rgba[1]) / 255,
+            b = parseFloat(rgba[2]) / 255,
+            a = parseFloat(rgba[3]);
+
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+    },
     hexToRgb:function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -239,16 +259,6 @@ MD.extend({
             } else {
             return object;
         }});
-
-        // for(var i = 0; i < array.length; i++) {
-        //     var object = array[i];
-        //     if (MD.isImmutableSketchObject(object)) {
-        //         array[i] = MD.mutableSketchObject(object);
-        //     }
-        // }
-
-        // return array;
-
-    }
+    },
 
 });

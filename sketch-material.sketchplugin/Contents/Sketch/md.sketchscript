@@ -30,8 +30,20 @@ function commandTable(context) { MD.init(context, "generate-table"); }
 // Tooltip
 function commandTooltip(context) { MD.init(context, "generate-tooltip"); }
 
+// Menu
+function commandMenu(context) { MD.init(context, "generate-menu"); }
+
 // Typogrpahy
 function commandTypography(context) { MD.init(context, "typography"); }
+
+// Color
+function commandColor(context) { MD.init(context, "color"); }
+
+// Imagery
+function commandImagery(context) { MD.init(context, "imagery"); }
+
+// Libraries
+function commandLibrary(context) { MD.init(context, "libraries"); }
 
 // Shadows
 function commandElevation00(context) { MD.init(context, "apply-elevation", "00"); }

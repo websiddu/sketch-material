@@ -14,6 +14,9 @@ MD.extend({
         case "dialogs":
           this.importDialogStylesAndSymbols();
           break;
+        case "menus":
+          this.importMenuStylesAndSymbols();
+          break;
         case "snackbars":
           this.importSnackBarStylesAndSymbols();
           break;
@@ -70,6 +73,26 @@ MD.extend({
     // this.importSymbols('toasts', ['dialog/actions'], false);
     this.importSharedStyles(toastUrl, styles);
   },
+
+  importMenuStylesAndSymbols: function() {
+    var styles = {
+      layerStyles: ['MD/Menu/BG'],
+      textStyles: ['MD/Menu/Desktop/Dense',
+        'MD/Menu/Desktop/Dense/RTL',
+        'MD/Menu/Desktop/Normal',
+        'MD/Menu/Desktop/Normal/RTL',
+        'MD/Menu/Mobile/Dense',
+        'MD/Menu/Mobile/Normal',
+      ]
+    }
+
+    var dialogsPath = this.resources + '/menus.sketch';
+    var dialogsUrl = NSURL.fileURLWithPath(dialogsPath);
+    this.importSharedStyles(dialogsUrl, styles);
+    this.importSymbols('menus', ['MD/Menu/Mobile/Normal', 'MD/Menu/Mobile/Icon/Normal', 'MD/Menu/Mobile/Icon/Dense', 'MD/Menu/Mobile/Dense', 'MD/Menu/Desktop/Normal', 'MD/Menu/Desktop/Icon/Normal', 'MD/Menu/Desktop/Icon/Dense', 'MD/Menu/Desktop/Dense', 'MD/Menu/Divider'], false);
+
+  },
+
 
   importDialogStylesAndSymbols: function () {
     var styles = {
@@ -305,8 +328,6 @@ sketchObjectFromArchiveData: function(archiveData) {
     if(layer.class() == 'MSTextLayer') {
 
       var sharedStyle = layer.sharedObject();
-
-      log("shared style....");
 
       if(sharedStyle) {
         var sharedStyleName = sharedStyle.name();

@@ -4,9 +4,9 @@ function openURL(url){
 }
 
 function linkSite(){
-  openURL('https://websiddu.github.io/sketch-material/');
+  openURL('https://websiddu.github.io/sketch-material');
 }
 
 function linkDocumentation(){
-  openURL('https://websiddu.github.io/sketch-material/help.html');
+  openURL('https://websiddu.github.io/sketch-material/help');
 }

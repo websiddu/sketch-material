@@ -6,5 +6,5 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 ga('create', 'UA-55363605-11', 'auto');
 
 ga('set', 'checkProtocolTask', function(data) {
-  data.set('location', 'https://websiddu.github.io/sync-to-slides/');
+  data.set('location', 'http://sketch-material.googleplex.com');
 });

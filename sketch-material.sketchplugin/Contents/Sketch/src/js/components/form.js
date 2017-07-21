@@ -210,7 +210,7 @@ MD['Forms'] = function () {
   }
 
   var _updateOverrides = function(instance, symbolMaster, overridesFieldNames, field) {
-    var layerIDs = _getLayerIDs(instance, symbolMaster, overridesFieldNames);
+    var layerIDs = MD.getLayerIDsOfOverrides(instance, symbolMaster, overridesFieldNames);
     var values = instance.overrides();
     if (!values) { values = NSMutableDictionary.dictionary(); }
     var existingOverrides = values;
@@ -223,24 +223,6 @@ MD['Forms'] = function () {
     instance.overrides = mutableOverrides;
   };
 
-  var _getLayerIDs = function(instance, symbolMaster, overridesFieldNames) {
-    // var symbolMaster = instance.symbolMaster();
-    var children = symbolMaster.children();
-    var layerIDs = {};
-
-    for (var i = 0; i < children.count(); i++){
-      var layer = children[i];
-      for(var j = 0; j < overridesFieldNames.length; j++) {
-        var overridesID = overridesFieldNames[j];
-        if(layer.name() == overridesFieldNames[j] ) {
-          layerIDs[overridesID] = layer.objectID();
-          break;
-        }
-      }
-    }
-
-    return layerIDs;
-  };
 
   return {
     generateForms: _generateForms

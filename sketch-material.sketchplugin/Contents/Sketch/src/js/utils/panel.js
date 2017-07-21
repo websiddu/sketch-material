@@ -1,5 +1,22 @@
 // Panel.js
 MD.extend({
+
+  initFramework: function (context, frameworkName) {
+    var scriptPath = context.scriptPath;
+    var pluginRoot = scriptPath.stringByDeletingLastPathComponent();
+
+    pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug/";
+
+    var mocha = [Mocha sharedRuntime];
+    if (NSClassFromString(frameworkName) == null) {
+      if (![mocha loadFrameworkWithName:frameworkName inDirectory:pluginRoot]) {
+        log('An error ocurred while loading the SketchSlides Framework.');
+        return;
+      }
+    }
+    return [[ServiceManager alloc] init];
+  },
+
   createCocoaObject: function (methods, superclass) {
     var uniqueClassName = "MD.sketch_" + NSUUID.UUID().UUIDString();
     var classDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, superclass || NSObject);
@@ -167,8 +184,74 @@ MD.extend({
           MD.Typography().applyTypographyStyles(data);
         }
 
+        if(request == 'applyColor') {
+          var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedColor")));
+          MD.Color().applyColor(data);
+        }
+
         if (request == 'onWindowDidBlur') {
           MD.addFirstMouseAcceptor(webView, contentView);
+        }
+
+        if (request == 'fetchUser') {
+          MD.frameWork.userInfo(webView);
+        }
+
+        if (request == 'signIn') {
+          MD.frameWork.signIn(webView);
+        }
+
+        if (request == 'signOut') {
+          MD.frameWork.signOut(webView);
+        }
+
+        if (request == 'LogInSuccess') {
+          MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
+          windowObject.evaluateWebScript("window.location.href = 'libraries';");
+        }
+
+        if (request == 'getSubFolders') {
+          MD.frameWork.subFolders_webView('0B8xcNpJXhd2WMmg4cXc2aVpOV2c', webView);
+        }
+
+        if (request.startsWith('searchImages__')) {
+          var queryString = request.replace('searchImages__', '');
+          MD.frameWork.searchImages_webView(queryString, webView);
+        }
+
+        if(request.startsWith('loadImages__') > 0) {
+          var folderId = request.replace('loadImages__', '');
+          MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+        }
+
+        if(request.startsWith('loadFiles__') > 0) {
+          var folderId = request.replace('loadFiles__', '');
+          MD.frameWork.getFiles_webView(folderId, webView);
+        }
+
+        if(request == 'getLibraryFiles') {
+          MD.Library().checkLoadedLibraries(webView);
+          MD.frameWork.getFiles_commitFunction_webView('0B8xcNpJXhd2WQ3k4YUJ3MmFSWWs', 'saveLibraryFiles', webView);
+        }
+
+        if(request == 'downloadFile') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("downloadFile")));
+          MD.Library().downloadFile(file);
+        }
+
+        if(request == 'downloadComplete') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("downloadFile")));
+          MD.Library().handleDownloadComplete(file);
+        }
+
+        if(request == 'toggleFileState') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("toggleFileState")));
+          MD.Library().toggleFileState(file);
+        }
+
+        if(request == 'removeFile') {
+          var file = JSON.parse(decodeURI(windowObject.valueForKey("removeFile")));
+          MD.Library().removeFile(file);
         }
 
         if (request == "close") {
@@ -189,6 +272,8 @@ MD.extend({
         windowObject.evaluateWebScript("window.location.hash = '';");
       })
     });
+
+
 
     webView.setFrameLoadDelegate_(delegate.getClassInstance());
     // NSButton already returns YES for -acceptsFirstMouse: so all we need to do
@@ -236,6 +321,8 @@ MD.extend({
       NSApp.runModalForWindow(Panel);
     }
 
+    MD.webView = webView;
+
     return result;
   },
 
@@ -267,7 +354,7 @@ MD.extend({
       width: 980,
       height: 700,
       data: data,
-      identifier: 'com.sketch.material.table',
+      identifier: 'com.websiddu.material.table',
       floatWindow: false,
       callback: function (data) {
         self.configs = self.setConfigs({
@@ -282,15 +369,33 @@ MD.extend({
       data = {};
 
     return this.MDPanel({
-      url: MD.baseUrl + "/dialogs",
+      url: this.baseUrl + "/dialogs",
       remote: true,
       width: 850,
       height: 680,
       data: data,
-      identifier: 'com.sketch.material.dialogs',
+      identifier: 'com.websiddu.material.dialogs',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.dialogsData = dataFromWebView;
+      }
+    });
+  },
+
+  menuPanel: function() {
+    var self = this,
+    data = {};
+
+    return this.MDPanel({
+      url: this.baseUrl + "/menu",
+      remote: true,
+      width: 850,
+      height: 580,
+      data: data,
+      identifier: 'com.websiddu.material.menu',
+      floatWindow: false,
+      callback: function (dataFromWebView) {
+        MD.menuData = dataFromWebView;
       }
     });
   },
@@ -300,16 +405,80 @@ MD.extend({
       data = {};
 
     return this.MDPanel({
-      url: MD.baseUrl + "/snackbars",
+      url: this.baseUrl + "/snackbars",
       // url: "http://localhost:8031/snackbars",
       remote: true,
       width: 850,
       height: 450,
       data: data,
-      identifier: 'com.sketch.material.snackbars',
+      identifier: 'com.websiddu.material.snackbars',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.snackbarsData = dataFromWebView;
+      }
+    });
+  },
+
+  librariesPanel: function (isAuthorized) {
+    var self = this,
+      data = {};
+
+    var url = isAuthorized ? "libraries" : "login";
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      // url: this.baseUrl + "/color",
+      url: 'http://0.0.0.0:8031/' + url,
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.libraries',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.librariesData = dataFromWebView;
+      }
+    });
+  },
+
+  imageryPanel: function (isAuthorized) {
+    var self = this,
+      data = {};
+
+    var url = isAuthorized ? "imagery" : "login";
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      // url: this.baseUrl + "/color",
+      url: 'http://0.0.0.0:8031/' + url,
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.imagery',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.imageryData = dataFromWebView;
+      }
+    });
+  },
+
+  colorPanel: function () {
+    var self = this,
+      data = {};
+
+    return this.MDPanel({
+      // url: "http://0.0.0.0:8031/color",
+      url: this.baseUrl + "/color",
+      // url: 'http://0.0.0.0:8080/',
+      remote: true,
+      width: 376,
+      height: 615,
+      data: data,
+      identifier: 'com.websiddu.material.color',
+      floatWindow: true,
+      callback: function (dataFromWebView) {
+        MD.colorData = dataFromWebView;
       }
     });
   },
@@ -320,12 +489,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/styles",
-      url: MD.baseUrl + "/styles",
+      url: this.baseUrl + "/styles",
       remote: true,
       width: 500,
       height: 600,
       data: data,
-      identifier: 'com.sketch.material.typography',
+      identifier: 'com.websiddu.material.typography',
       floatWindow: true,
       callback: function (dataFromWebView) {
         MD.typographyData = dataFromWebView;
@@ -340,12 +509,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/forms",
-      url: MD.baseUrl + "/forms",
+      url: this.baseUrl + "/forms",
       remote: true,
       width: 1000,
       height: 650,
       data: data,
-      identifier: 'com.sketch.material.forms',
+      identifier: 'com.websiddu.material.forms',
       floatWindow: false,
       callback: function (dataFromWebView) {
         MD.formsData = dataFromWebView;
@@ -360,12 +529,12 @@ MD.extend({
 
     return this.MDPanel({
       // url: this.pluginSketch + "/panel/importer/index.html",
-      url: MD.baseUrl + "/icons",
+      url: this.baseUrl + "/icons",
       remote: true,
       width: 300,
       height: 500,
       data: data,
-      identifier: 'com.sketch.material.icons',
+      identifier: 'com.websiddu.material.icons',
       floatWindow: true,
       callback: function (data) {
         // self.configs = self.setConfigs({
@@ -384,7 +553,7 @@ MD.extend({
       width: 600,
       height: 500,
       data: data,
-      identifier: 'com.sketch.material.resources',
+      identifier: 'com.websiddu.material.resources',
       floatWindow: true,
       callback: function (data) {
         // self.configs = self.setConfigs({
