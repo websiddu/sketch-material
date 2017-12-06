@@ -1,5 +1,25 @@
 # Change Log
 
+### [0.1.10] – 2017-10-29
+#### Added
+- Menus to the list
+
+#### Fixes
+- Fixing the icons auto suggest
+
+
+### [0.1.9] – 2017-08-07
+#### Fixes
+- Fixing the localized url
+
+### [0.1.8] – 2017-08-06
+#### Fixes
+- Added material color pallet
+
+### [0.1.7] – 2017-08-06
+#### Fixes
+- Icon constraints are fixed
+
 ### [0.1.6] – 2017-06-12
 #### Fixes
 - Minor fixes in the table & dialog generator
