@@ -1,5 +1,9 @@
 # Change Log
 
+### [0.1.11] – 2017-12-10
+#### Added
+- Fixing the broken api for 48.1
+
 ### [0.1.10] – 2017-10-29
 #### Added
 - Menus to the list

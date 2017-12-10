@@ -206,7 +206,7 @@ MD.extend({
       midX = MD.getRect(MD.artboard).width/2;
       midY = MD.getRect(MD.artboard).height/2;
     } else {
-      var contentDrawView = MD.document.currentView();
+      var contentDrawView = MD.document.contentDrawView();
       midX = Math.round((contentDrawView.frame().size.width/2 - contentDrawView.horizontalRuler().baseLine())/contentDrawView.zoomValue());
       midY = Math.round((contentDrawView.frame().size.height / 2 - contentDrawView.verticalRuler().baseLine()) / contentDrawView.zoomValue());
     }
