@@ -745,14 +745,14 @@ MD.extend({
     if (style == false) {
       style = MSStyle.alloc().init();
 
-      var color = MSColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
+      var color = MSImmutableColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
         fill = style.addStylePartOfType(0);
 
       fill.color = color;
 
       if (borderColor) {
         var border = style.addStylePartOfType(1),
-          borderColor = MSColor.colorWithRed_green_blue_alpha(borderColor.r, borderColor.g, borderColor.b, borderColor.a);
+          borderColor = MSImmutableColor.colorWithRed_green_blue_alpha(borderColor.r, borderColor.g, borderColor.b, borderColor.a);
 
         border.color = borderColor;
         border.thickness = 1;
@@ -775,7 +775,7 @@ MD.extend({
     style = (!style || this.is(style, MSSharedStyle)) ? style : style[0];
 
     if (style == false && color) {
-      var color = MSColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
+      var color = MSImmutableColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
         alignment = alignment || 0, //[left, right, center, justify]
         fontFamily = fontFamily || 'Roboto',
         lineHeight = lineHeight || 15,
