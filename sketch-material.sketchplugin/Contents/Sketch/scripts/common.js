@@ -513,7 +513,7 @@ MD.extend({
             b = parseInt(hex.substring(5, 7), 16) / 255,
             a = 1;
 
-        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     rgbaToMSColor: function(rgba) {
         rgba = rgba.replace('rgba(', '').replace(')', '');
@@ -524,7 +524,7 @@ MD.extend({
             b = parseFloat(rgba[2]) / 255,
             a = parseFloat(rgba[3]);
 
-        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     hexToRgb:function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -2897,10 +2897,10 @@ MD['Importer'] = function () {
 
     if (data.colorValue != '#000000' && data.isGlif ) {
       var colorHex = MD.hexToNSColor('#000000', 1)
-      var color = MSColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
+      var color = MSImmutableColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
 
       var replaceColorHex = MD.hexToNSColor(data.colorValue, 1);
-      var replaceColor = MSColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
+      var replaceColor = MSImmutableColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
 
       var draggedLayer = selectedLayers.firstLayer();
 
