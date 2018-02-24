@@ -2,10 +2,8 @@
 MD.extend({
 
   initFramework: function (context, frameworkName) {
-    var scriptPath = context.scriptPath;
-    var pluginRoot = scriptPath.stringByDeletingLastPathComponent();
-
-    pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug/";
+    var pluginRoot = this.resources;
+    // pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug";
 
     var mocha = [Mocha sharedRuntime];
     if (NSClassFromString(frameworkName) == null) {
@@ -14,7 +12,7 @@ MD.extend({
         return;
       }
     }
-    return [[ServiceManager alloc] init];
+    return ServiceManager.alloc().init();
   },
 
   createCocoaObject: function (methods, superclass) {
@@ -207,7 +205,7 @@ MD.extend({
 
         if (request == 'LogInSuccess') {
           MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
-          windowObject.evaluateWebScript("window.location.href = 'libraries';");
+          windowObject.evaluateWebScript("window.location.href = 'imagery';");
         }
 
         if (request == 'getSubFolders') {
@@ -222,6 +220,16 @@ MD.extend({
         if(request.startsWith('loadImages__') > 0) {
           var folderId = request.replace('loadImages__', '');
           MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+        }
+
+        if(request == 'insertImage') {
+          var photo = JSON.parse(decodeURI(windowObject.valueForKey("currentPhoto")));
+          MD.Imagery().insertImages(photo);
+        }
+
+        if(request == 'feelingLucky') {
+          var photos = JSON.parse(decodeURI(windowObject.valueForKey("shuffledPhotosObj")));
+          MD.Imagery().insertImages(photos);
         }
 
         if(request.startsWith('loadFiles__') > 0) {
@@ -445,12 +453,11 @@ MD.extend({
     var self = this,
       data = {};
 
-    var url = isAuthorized ? "imagery" : "login";
+    var url = isAuthorized ? "/imagery" : "/login";
 
     return this.MDPanel({
-      // url: "http://0.0.0.0:8031/color",
-      // url: this.baseUrl + "/color",
-      url: 'http://0.0.0.0:8031/' + url,
+      url: 'http://0.0.0.0:8031' + url,
+      // url: this.baseUrl + url,
       remote: true,
       width: 376,
       height: 615,

@@ -34,10 +34,10 @@ MD['Importer'] = function () {
 
     if (data.colorValue != '#000000' && data.isGlif ) {
       var colorHex = MD.hexToNSColor('#000000', 1)
-      var color = MSImmutableColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
+      var color = MSColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
 
       var replaceColorHex = MD.hexToNSColor(data.colorValue, 1);
-      var replaceColor = MSImmutableColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
+      var replaceColor = MSColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
 
       var draggedLayer = selectedLayers.firstLayer();
 
@@ -49,7 +49,6 @@ MD['Importer'] = function () {
           layers = arr;
         }
         for (var i = 0; i < layers.count(); i++) {
-
           var layer = layers.objectAtIndex(i);
           var fill = layer.style().fills().firstObject();
           fill.color = replaceColor;

@@ -1,0 +1,6 @@
+framework module SketchMaterial {
+  umbrella header "SketchMaterial.h"
+
+  export *
+  module * { export * }
+}

@@ -45,7 +45,7 @@ MD.extend({
             b = parseInt(hex.substring(5, 7), 16) / 255,
             a = 1;
 
-        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     rgbaToMSColor: function(rgba) {
         rgba = rgba.replace('rgba(', '').replace(')', '');
@@ -56,7 +56,7 @@ MD.extend({
             b = parseFloat(rgba[2]) / 255,
             a = parseFloat(rgba[3]);
 
-        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     hexToRgb:function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

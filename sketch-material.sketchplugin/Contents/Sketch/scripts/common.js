@@ -513,7 +513,7 @@ MD.extend({
             b = parseInt(hex.substring(5, 7), 16) / 255,
             a = 1;
 
-        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     rgbaToMSColor: function(rgba) {
         rgba = rgba.replace('rgba(', '').replace(')', '');
@@ -524,7 +524,7 @@ MD.extend({
             b = parseFloat(rgba[2]) / 255,
             a = parseFloat(rgba[3]);
 
-        return MSImmutableColor.colorWithRed_green_blue_alpha(r, g, b, a);
+        return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
     },
     hexToRgb:function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -745,14 +745,14 @@ MD.extend({
     if (style == false) {
       style = MSStyle.alloc().init();
 
-      var color = MSImmutableColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
+      var color = MSColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
         fill = style.addStylePartOfType(0);
 
       fill.color = color;
 
       if (borderColor) {
         var border = style.addStylePartOfType(1),
-          borderColor = MSImmutableColor.colorWithRed_green_blue_alpha(borderColor.r, borderColor.g, borderColor.b, borderColor.a);
+          borderColor = MSColor.colorWithRed_green_blue_alpha(borderColor.r, borderColor.g, borderColor.b, borderColor.a);
 
         border.color = borderColor;
         border.thickness = 1;
@@ -775,7 +775,7 @@ MD.extend({
     style = (!style || this.is(style, MSSharedStyle)) ? style : style[0];
 
     if (style == false && color) {
-      var color = MSImmutableColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
+      var color = MSColor.colorWithRed_green_blue_alpha(color.r, color.g, color.b, color.a),
         alignment = alignment || 0, //[left, right, center, justify]
         fontFamily = fontFamily || 'Roboto',
         lineHeight = lineHeight || 15,
@@ -997,10 +997,8 @@ MD.extend({
 MD.extend({
 
   initFramework: function (context, frameworkName) {
-    var scriptPath = context.scriptPath;
-    var pluginRoot = scriptPath.stringByDeletingLastPathComponent();
-
-    pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug/";
+    var pluginRoot = this.resources;
+    // pluginRoot = "/Users/gsid/Library/Developer/Xcode/DerivedData/SketchMaterial-eahwwljnpwksktbwjkaseorocgxl/Build/Products/Debug";
 
     var mocha = [Mocha sharedRuntime];
     if (NSClassFromString(frameworkName) == null) {
@@ -1009,7 +1007,7 @@ MD.extend({
         return;
       }
     }
-    return [[ServiceManager alloc] init];
+    return ServiceManager.alloc().init();
   },
 
   createCocoaObject: function (methods, superclass) {
@@ -1202,7 +1200,7 @@ MD.extend({
 
         if (request == 'LogInSuccess') {
           MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
-          windowObject.evaluateWebScript("window.location.href = 'libraries';");
+          windowObject.evaluateWebScript("window.location.href = 'imagery';");
         }
 
         if (request == 'getSubFolders') {
@@ -1217,6 +1215,16 @@ MD.extend({
         if(request.startsWith('loadImages__') > 0) {
           var folderId = request.replace('loadImages__', '');
           MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+        }
+
+        if(request == 'insertImage') {
+          var photo = JSON.parse(decodeURI(windowObject.valueForKey("currentPhoto")));
+          MD.Imagery().insertImages(photo);
+        }
+
+        if(request == 'feelingLucky') {
+          var photos = JSON.parse(decodeURI(windowObject.valueForKey("shuffledPhotosObj")));
+          MD.Imagery().insertImages(photos);
         }
 
         if(request.startsWith('loadFiles__') > 0) {
@@ -1440,12 +1448,11 @@ MD.extend({
     var self = this,
       data = {};
 
-    var url = isAuthorized ? "imagery" : "login";
+    var url = isAuthorized ? "/imagery" : "/login";
 
     return this.MDPanel({
-      // url: "http://0.0.0.0:8031/color",
-      // url: this.baseUrl + "/color",
-      url: 'http://0.0.0.0:8031/' + url,
+      url: 'http://0.0.0.0:8031' + url,
+      // url: this.baseUrl + url,
       remote: true,
       width: 376,
       height: 615,
@@ -2849,6 +2856,9 @@ MD['Forms'] = function () {
 
 MD['Imagery'] = function () {
 
+  const FillType = { Solid: 0, Gradient: 1, Pattern: 4, Noise: 5 };
+  const PatternFillType = { Tile: 0, Fill: 1, Stretch: 2, Fit: 3};
+
   var _showImageryPanel = function() {
     MD['frameWork'] = MD.initFramework(MD.context, 'SketchMaterial');
     MD.frameWork.setWebView(MD.webView);
@@ -2856,8 +2866,65 @@ MD['Imagery'] = function () {
     MD.imageryPanel(isAuthorized);
   }
 
+  var fetchImage = function(url) {
+    var nsurl = NSURL.URLWithString(url);
+    var newImage = NSImage.alloc().initWithContentsOfURL(nsurl);
+    return MSImageData.alloc().initWithImage(newImage);
+  }
+
+  var fillLayer = function(photo, layer){
+
+    var doc = NSDocumentController.sharedDocumentController().currentDocument();
+    var selection = doc.selectedLayers().layers();
+
+    var image = fetchImage(photo.thumbnailLink.slice(0, -5));
+
+    if(layer && layer.style().firstEnabledFill()) {
+        if(image) {
+            var fill = layer.style().fills().firstObject();
+            fill.setFillType(4);
+            fill.setImage(image);
+            fill.setPatternFillType(1);
+        } else {
+            print("Can't load image!");
+        }
+    } else {
+        print("Select a layer that has at least one fill style");
+    }
+  }
+
+  var insertAsImageLayer = function(photo) {
+    // var layer = MSBitmapLayer.bitmapLayerWithImageFromPath(photo.thumbnailLink.slice(0, -5));
+
+    var layer = MSBitmapLayer.alloc().initWithFrame(CGRectMake(0, 0, 100, 100));
+
+    layer.image = fetchImage(photo.thumbnailLink.slice(0, -5));
+    layer.setName(photo.name);
+    layer.resizeToOriginalSize();
+
+    MD.current.addLayers([layer]);
+  }
+
+  var _insertImages = function(photos) {
+    var doc = NSDocumentController.sharedDocumentController().currentDocument();
+    var selection = doc.selectedLayers().layers();
+    var i = 0;
+
+    if(selection.length > 0) {
+      selection.forEach(function(layer){
+        if(!photos[i]) { i = 0; }
+        fillLayer(photos[i], layer);
+        i++;
+      });
+    } else {
+      insertAsImageLayer(photos[0])
+    }
+
+  }
+
   return {
     showImageryPanel: _showImageryPanel,
+    insertImages: _insertImages,
   }
 }
 
@@ -2897,10 +2964,10 @@ MD['Importer'] = function () {
 
     if (data.colorValue != '#000000' && data.isGlif ) {
       var colorHex = MD.hexToNSColor('#000000', 1)
-      var color = MSImmutableColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
+      var color = MSColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
 
       var replaceColorHex = MD.hexToNSColor(data.colorValue, 1);
-      var replaceColor = MSImmutableColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
+      var replaceColor = MSColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
 
       var draggedLayer = selectedLayers.firstLayer();
 
@@ -2912,7 +2979,6 @@ MD['Importer'] = function () {
           layers = arr;
         }
         for (var i = 0; i < layers.count(); i++) {
-
           var layer = layers.objectAtIndex(i);
           var fill = layer.style().fills().firstObject();
           fill.color = replaceColor;
