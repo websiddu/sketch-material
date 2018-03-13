@@ -65,15 +65,13 @@ MD['Dialog'] = function () {
       DIALOG_STYLES.width = '640';
     }
 
+
     dialogTitle.setName('dialog-title');
     dialogContent.setName('dialog-content');
     dialogTitle.setTextBehaviour_mayAdjustFrame(1, true);
     dialogContent.setTextBehaviour_mayAdjustFrame(1, false);
 
     dialogTitle.adjustFrameToFit()
-
-    dialogTitle.canResize();
-    dialogContent.canResize();
 
     dialogBg.layers().firstObject().setCornerRadiusFromComponents("2");
 
