@@ -803,7 +803,7 @@ MD.extend({
         border.position = 1;
       }
 
-      sharedStyles.addSharedStyleWithName_firstInstance(name, style);
+      MD.addSharedStylesToDoc(name, style, 'layer');
     }
 
     return (style.newInstance) ? style.newInstance() : style;
@@ -835,7 +835,7 @@ MD.extend({
       text.setTextAlignment(alignment);
 
       style = text.style();
-      sharedStyles.addSharedStyleWithName_firstInstance(name, style);
+      MD.addSharedStylesToDoc(name, style, 'text');
       this.removeLayer(text);
     }
 
@@ -1754,7 +1754,7 @@ MD.extend({
   },
 
   importInkTipStyles: function () {
-    var filePath = this.resources + '/' + 'tooltips' + '.sketch',
+    var filePath = this.resources + '/' + 'tooltips.sketch',
       filePathUrl = NSURL.fileURLWithPath(filePath);
 
     var styles = {
@@ -1986,7 +1986,7 @@ sketchObjectFromArchiveData: function(archiveData) {
           }, docLayerStyles);
 
           if(findLayerStyle == 0) {
-            docLayerStyles.addSharedStyleWithName_firstInstance(style.name(), style.style());
+            MD.addSharedStylesToDoc(style.name(), style.style(), 'layer');
           }
         }
 
@@ -2002,7 +2002,7 @@ sketchObjectFromArchiveData: function(archiveData) {
           // log(style.name() + " — " + style.objectID());
 
           if(findTextStyle == 0) {
-            docTextStyles.addSharedStyleWithName_firstInstance(style.name(), style.style());
+            MD.addSharedStylesToDoc(style.name(), style.style());
           }
         }
         return;
@@ -2015,7 +2015,8 @@ sketchObjectFromArchiveData: function(archiveData) {
             key: "(name != NULL) && (name == %@)",
             match: styles.layerStyles[i]
           }, layerStyles);
-          this.documentData.layerStyles().addSharedStyleWithName_firstInstance(styles.layerStyles[i], style.style());
+
+          MD.addSharedStylesToDoc(styles.layerStyles[i], style.style(), 'layer');
         }
       }
 
@@ -2026,10 +2027,28 @@ sketchObjectFromArchiveData: function(archiveData) {
             key: "(name != NULL) && (name == %@)",
             match: styles.textStyles[i]
           }, textStyles);
-          this.documentData.layerTextStyles().addSharedStyleWithName_firstInstance(styles.textStyles[i], style.style());
+
+          MD.addSharedStylesToDoc(styles.textStyles[i], style.style());
+
         }
       }
 
+    }
+  },
+
+  addSharedStylesToDoc(name, textStyle, type) {
+
+    var container = this.documentData.layerTextStyles();
+
+    if (type == 'layer') {
+      container = this.documentData.layerStyles();
+    }
+
+    if (container.addSharedStyleWithName_firstInstance) {
+      container.addSharedStyleWithName_firstInstance(name, textStyle);
+    } else {
+      var s = MSSharedStyle.alloc().initWithName_firstInstance(name, textStyle);
+      container.addSharedObject(s);
     }
   },
 
@@ -2045,18 +2064,17 @@ sketchObjectFromArchiveData: function(archiveData) {
 
     var urlData;
 
-    if (isRemote && !newDoc) {
-      symbolFilePath = "http://localhost:8080/static/sketch/" + this.resources  + '/' + name + '.sketch';
-      symbolFilePathUrl = NSURL.URLWithString(symbolFilePath);
-      urlData = NSData.dataWithContentsOfURL(symbolFilePathUrl);
+    // if (isRemote && !newDoc) {
+    //   symbolFilePath = "http://localhost:8080/static/sketch/" + this.resources  + '/' + name + '.sketch';
+    //   symbolFilePathUrl = NSURL.URLWithString(symbolFilePath);
+    //   urlData = NSData.dataWithContentsOfURL(symbolFilePathUrl);
 
-      if (urlData) {
-        var filePath = this.resources + '/' + name + '.sketch';
-        urlData.writeToFile_atomically(filePath, true);
-        symbolFilePath = this.resources + '/' + name + '.sketch';
-      }
-    }
-
+    //   if (urlData) {
+    //     var filePath = this.resources + '/' + name + '.sketch';
+    //     urlData.writeToFile_atomically(filePath, true);
+    //     symbolFilePath = this.resources + '/' + name + '.sketch';
+    //   }
+    // }
     this.importResources(symbolFilePathUrl, values);
   }
 

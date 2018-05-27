@@ -26,7 +26,7 @@ MD.extend({
         border.position = 1;
       }
 
-      sharedStyles.addSharedStyleWithName_firstInstance(name, style);
+      MD.addSharedStylesToDoc(name, style, 'layer');
     }
 
     return (style.newInstance) ? style.newInstance() : style;
@@ -58,7 +58,7 @@ MD.extend({
       text.setTextAlignment(alignment);
 
       style = text.style();
-      sharedStyles.addSharedStyleWithName_firstInstance(name, style);
+      MD.addSharedStylesToDoc(name, style, 'text');
       this.removeLayer(text);
     }
 

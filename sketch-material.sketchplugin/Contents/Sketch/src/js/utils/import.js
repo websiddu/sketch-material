@@ -140,7 +140,7 @@ MD.extend({
   },
 
   importInkTipStyles: function () {
-    var filePath = this.resources + '/' + 'tooltips' + '.sketch',
+    var filePath = this.resources + '/' + 'tooltips.sketch',
       filePathUrl = NSURL.fileURLWithPath(filePath);
 
     var styles = {
@@ -413,7 +413,9 @@ sketchObjectFromArchiveData: function(archiveData) {
             key: "(name != NULL) && (name == %@)",
             match: styles.textStyles[i]
           }, textStyles);
+
           MD.addSharedStylesToDoc(styles.textStyles[i], style.style());
+
         }
       }
 
@@ -421,6 +423,7 @@ sketchObjectFromArchiveData: function(archiveData) {
   },
 
   addSharedStylesToDoc(name, textStyle, type) {
+
     var container = this.documentData.layerTextStyles();
 
     if (type == 'layer') {
@@ -447,6 +450,17 @@ sketchObjectFromArchiveData: function(archiveData) {
 
     var urlData;
 
+    // if (isRemote && !newDoc) {
+    //   symbolFilePath = "http://localhost:8080/static/sketch/" + this.resources  + '/' + name + '.sketch';
+    //   symbolFilePathUrl = NSURL.URLWithString(symbolFilePath);
+    //   urlData = NSData.dataWithContentsOfURL(symbolFilePathUrl);
+
+    //   if (urlData) {
+    //     var filePath = this.resources + '/' + name + '.sketch';
+    //     urlData.writeToFile_atomically(filePath, true);
+    //     symbolFilePath = this.resources + '/' + name + '.sketch';
+    //   }
+    // }
     this.importResources(symbolFilePathUrl, values);
   }
 
