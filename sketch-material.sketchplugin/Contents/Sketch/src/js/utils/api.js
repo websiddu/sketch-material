@@ -320,5 +320,48 @@ MD.extend({
       }
     }
    return layerIDs;
+  },
+  makeColorSymbol: function(color, colorHex, colorAlpha, name) {
+    if (MD.findSymbolByName(name)) {
+      return;
+    }
+
+    var symbolsPage = MD.document
+      .documentData()
+      .symbolsPageOrCreateIfNecessary();
+
+    var colorBg = MD.addShape();
+    var colorBgRect = MD.getRect(colorBg);
+
+    colorBgRect.setHeight(10);
+    colorBgRect.setWidth(10);
+
+    if (colorBg.class() == "MSShapeGroup") {
+      var fills = colorBg.style().enabledFills();
+      if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
+        fills.lastObject().setColor(color);
+      } else {
+        var fill = colorBg.style().addStylePartOfType(0);
+        fill.setFillType(0);
+        fill.setColor(color);
+      }
+    }
+
+    var layers = MSLayerArray.arrayWithLayers([colorBg]);
+
+    MD.current.addLayers(layers);
+
+    if (MSSymbolCreator.canCreateSymbolFromLayers(layers)) {
+      var symbolName = name;
+      var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(
+        layers,
+        symbolName,
+        true
+      );
+      var symbolInstanceRect = MD.getRect(symbolInstance);
+      symbolInstanceRect.setConstrainProportions(true);
+      symbolInstance.removeFromParent();
+    }
   }
+
 });

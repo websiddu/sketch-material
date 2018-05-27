@@ -45,6 +45,10 @@ MD['Imagery'] = function () {
     layer.image = fetchImage(photo.thumbnailLink.slice(0, -5));
     layer.setName(photo.name);
     layer.resizeToOriginalSize();
+    var layerRect = MD.getRect(layer);
+
+    layerRect.setX(MD.getCenterOfViewPort().x - layerRect.width * 0.5);
+    layerRect.setY(MD.getCenterOfViewPort().y - layerRect.height * 0.5);
 
     MD.current.addLayers([layer]);
   }

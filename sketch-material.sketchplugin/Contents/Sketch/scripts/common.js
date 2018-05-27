@@ -20,6 +20,7 @@ var MD = {
     coscript.setShouldKeepAround(false);
 
     this.baseUrl = "https://sketch-material.firebaseapp.com";
+    // this.baseUrl = "http://0.0.0.0:8031";
 
     if (command && command == "init") {
       // this.menu();
@@ -463,7 +464,50 @@ MD.extend({
       }
     }
    return layerIDs;
+  },
+  makeColorSymbol: function(color, colorHex, colorAlpha, name) {
+    if (MD.findSymbolByName(name)) {
+      return;
+    }
+
+    var symbolsPage = MD.document
+      .documentData()
+      .symbolsPageOrCreateIfNecessary();
+
+    var colorBg = MD.addShape();
+    var colorBgRect = MD.getRect(colorBg);
+
+    colorBgRect.setHeight(10);
+    colorBgRect.setWidth(10);
+
+    if (colorBg.class() == "MSShapeGroup") {
+      var fills = colorBg.style().enabledFills();
+      if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
+        fills.lastObject().setColor(color);
+      } else {
+        var fill = colorBg.style().addStylePartOfType(0);
+        fill.setFillType(0);
+        fill.setColor(color);
+      }
+    }
+
+    var layers = MSLayerArray.arrayWithLayers([colorBg]);
+
+    MD.current.addLayers(layers);
+
+    if (MSSymbolCreator.canCreateSymbolFromLayers(layers)) {
+      var symbolName = name;
+      var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(
+        layers,
+        symbolName,
+        true
+      );
+      var symbolInstanceRect = MD.getRect(symbolInstance);
+      symbolInstanceRect.setConstrainProportions(true);
+      symbolInstance.removeFromParent();
+    }
   }
+
 });
 
 // help.js
@@ -1208,13 +1252,14 @@ MD.extend({
         }
 
         if (request.startsWith('searchImages__')) {
-          var queryString = request.replace('searchImages__', '');
-          MD.frameWork.searchImages_webView(queryString, webView);
+          var search = JSON.parse(decodeURI(windowObject.valueForKey("currentSearch")));
+          MD.frameWork.searchImages_nextPageToken_webView(search.query, search.pageToken, webView);
         }
 
         if(request.startsWith('loadImages__') > 0) {
           var folderId = request.replace('loadImages__', '');
-          MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+          var folder = JSON.parse(decodeURI(windowObject.valueForKey("currentFolder")));
+          MD.frameWork.getFiles_commitFunction_nextPageToken_webView(folder.folderId, 'saveImages', folder.pageToken, webView);
         }
 
         if(request == 'insertImage') {
@@ -2899,6 +2944,10 @@ MD['Imagery'] = function () {
     layer.image = fetchImage(photo.thumbnailLink.slice(0, -5));
     layer.setName(photo.name);
     layer.resizeToOriginalSize();
+    var layerRect = MD.getRect(layer);
+
+    layerRect.setX(MD.getCenterOfViewPort().x - layerRect.width * 0.5);
+    layerRect.setY(MD.getCenterOfViewPort().y - layerRect.height * 0.5);
 
     MD.current.addLayers([layer]);
   }
@@ -2926,18 +2975,37 @@ MD['Imagery'] = function () {
   }
 }
 
-MD['Importer'] = function () {
+MD["Importer"] = function() {
+  var _import = function() {};
 
-  var _import = function () {
-
-  }
-
-  var _convertSvgToSymbol = function (data) {
-
+  var _convertSvgToSymbol = function(data) {
     var name = data.name;
     var selectedLayers = MD.document.selectedLayers();
-    var symbolsPage = MD.document.documentData().symbolsPageOrCreateIfNecessary();
+    var symbolsPage = MD.document
+      .documentData()
+      .symbolsPageOrCreateIfNecessary();
     var existingSymbol = MD.findSymbolByName(name);
+    var replaceColor, selectedSymbol;
+
+
+    if(data.colorValue) {
+      replaceColor = MSColor.colorWithRed_green_blue_alpha(
+        data.colorValue.r / 255,
+        data.colorValue.g / 255,
+        data.colorValue.b / 255,
+        data.colorValue.a
+      );
+
+      MD.makeColorSymbol(
+        replaceColor,
+        data.colorHex,
+        data.colorAlpha,
+        "c/" + data.colorHex + "/" + data.colorAlpha
+      );
+
+      selectedSymbol = MD.findSymbolByName("c/" + data.colorHex + "/" + data.colorAlpha);
+    }
+
 
     if (existingSymbol) {
       var newSymbol = existingSymbol.newSymbolInstance(),
@@ -2950,54 +3018,80 @@ MD['Importer'] = function () {
       MD.current.addLayers([newSymbol]);
       newSymbolRect.setX(droppedEleRect.x);
       newSymbolRect.setY(droppedEleRect.y);
-
       MD.current.removeLayer(droppedElement);
+
+      if(data.isGlif) {
+        newSymbol.overridePoints().forEach(function(overridePoint) {
+          if(overridePoint.layerName() + '' == '🎨 Color') {
+            newSymbol.setValue_forOverridePoint_(selectedSymbol.symbolID(), overridePoint);
+          }
+        });
+      }
+
       return;
     }
-    //avatars_and_widgets
-    //alphabet_logos
-    //internal_logos
-    //non_material_product_logos
-    //product_logos
 
-    if (data.colorValue != '#000000' && data.isGlif ) {
-      var colorHex = MD.hexToNSColor('#000000', 1)
-      var color = MSColor.colorWithRed_green_blue_alpha(colorHex.r, colorHex.g, colorHex.b, 1);
+    if (data.colorValue && data.isGlif) {
+      var colorTHex = MD.hexToNSColor("#000000", 1);
+      var colorBlack = MSColor.colorWithRed_green_blue_alpha(
+        colorTHex.r,
+        colorTHex.g,
+        colorTHex.b,
+        1
+      );
 
-      var replaceColorHex = MD.hexToNSColor(data.colorValue, 1);
-      var replaceColor = MSColor.colorWithRed_green_blue_alpha(replaceColorHex.r, replaceColorHex.g, replaceColorHex.b, 1);
+      MD.makeColorSymbol(colorBlack, "#000000", 1, "c/#000000/1");
+      blackSymbol = MD.findSymbolByName('c/#000000/1');
+      var blackSymbolInstance = blackSymbol.newSymbolInstance();
+      blackSymbolInstance.setName('🎨 Color')
+      var sRect = MD.getRect(blackSymbolInstance);
+      sRect.setHeight(24);
+      sRect.setWidth(24);
 
       var draggedLayer = selectedLayers.firstLayer();
 
-      var layers = MD.find({ key: "(style.firstEnabledFill != NULL) && (style.firstEnabledFill.fillType == 0) && (style.firstEnabledFill.color == %@)", match: color }, draggedLayer);
+      var subLayers = draggedLayer.layers();
 
-      if (layers) {
-        if (MD.is(layers, MSShapeGroup)) {
-          var arr = NSArray.arrayWithObject(layers);
-          layers = arr;
-        }
-        for (var i = 0; i < layers.count(); i++) {
-          var layer = layers.objectAtIndex(i);
-          var fill = layer.style().fills().firstObject();
-          fill.color = replaceColor;
-
+      for (var j = 0; j < subLayers.count(); j++) {
+        var layer = subLayers[j];
+        if (layer.style().hasEnabledFill() == 0) {
+          layer.removeFromParent();
         }
       }
+
+      subLayers = draggedLayer.layers();
+
+      for (var j = 0; j < subLayers.count(); j++) {
+        var layer = subLayers[j];
+        layer.style().removeAllStyleFills();
+        layer.hasClippingMask = true;
+      }
+
+      draggedLayer.addLayers([blackSymbolInstance]);
     }
 
-    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(
+      selectedLayers,
+      name,
+      true
+    );
 
     var symbolInstanceRect = MD.getRect(symbolInstance);
     symbolInstanceRect.setConstrainProportions(true);
 
-  }
+    symbolInstance.overridePoints().forEach(function(overridePoint) {
+      if(overridePoint.layerName() + '' == '🎨 Color') {
+        symbolInstance.setValue_forOverridePoint_(selectedSymbol.symbolID(), overridePoint);
+      }
+    });
 
+  };
 
   return {
     import: _import,
     convertSvgToSymbol: _convertSvgToSymbol
-  }
-}
+  };
+};
 
 MD['Library'] = function () {
 

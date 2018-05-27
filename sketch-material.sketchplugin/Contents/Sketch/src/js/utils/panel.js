@@ -213,13 +213,14 @@ MD.extend({
         }
 
         if (request.startsWith('searchImages__')) {
-          var queryString = request.replace('searchImages__', '');
-          MD.frameWork.searchImages_webView(queryString, webView);
+          var search = JSON.parse(decodeURI(windowObject.valueForKey("currentSearch")));
+          MD.frameWork.searchImages_nextPageToken_webView(search.query, search.pageToken, webView);
         }
 
         if(request.startsWith('loadImages__') > 0) {
           var folderId = request.replace('loadImages__', '');
-          MD.frameWork.getFiles_commitFunction_webView(folderId, 'saveImages', webView);
+          var folder = JSON.parse(decodeURI(windowObject.valueForKey("currentFolder")));
+          MD.frameWork.getFiles_commitFunction_nextPageToken_webView(folder.folderId, 'saveImages', folder.pageToken, webView);
         }
 
         if(request == 'insertImage') {
