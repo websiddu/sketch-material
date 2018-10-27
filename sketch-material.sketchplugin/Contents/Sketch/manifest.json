@@ -1,0 +1,30 @@
+{
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "commands": [
+    {
+      "name": "Icons...",
+      "identifier": "styles",
+      "script": "init.js"
+    },
+    {
+      "name": "Color...",
+      "identifier": "color",
+      "script": "init.js"
+    }
+  ],
+  "menu": {
+    "title": "Google Material (internal)",
+    "items": [
+      "styles",
+      "color"
+    ]
+  },
+  "version": "0.1.0",
+  "name": "sketch-material",
+  "identifier": "sketch-material",
+  "disableCocoaScriptPreprocessor": true,
+  "appcast": "https://raw.githubusercontent.com//master/.appcast.xml",
+  "author": "Siddhartha",
+  "authorEmail": "gsid@google.com"
+}
