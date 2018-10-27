@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/init.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/ui/settings.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -101,9 +101,8 @@ var exports =
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
-  baseURL: 'https://google-com-sketch-material.firebaseapp.com/',
-  layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings',
-  stylesPanelId: 'com.gsid.sketch.material.styles.13121'
+  baseURL: 'http://localhost:8082/',
+  layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings'
 });
 
 /***/ }),
@@ -523,41 +522,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/init.js":
-/*!*********************!*\
-  !*** ./src/init.js ***!
-  \*********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./panel/index */ "./src/panel/index.js");
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/constants */ "./src/common/constants.js");
-
-
-/* harmony default export */ __webpack_exports__["default"] = (function (context) {
-  var commandId = context.command.identifier();
-  var threadDictionary = NSThread.mainThread().threadDictionary();
-  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId];
-
-  if (browserWindow) {
-    browserWindow.windowObject.evaluateWebScript("window.vm.$router.push({path: '/m2/".concat(commandId, "'})"));
-    return;
-  }
-
-  var options = {
-    identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId,
-    width: 320,
-    height: 524,
-    url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "m2/" + commandId
-  };
-  var panel = new _panel_index__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
-  threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId] = panel;
-});
-
-/***/ }),
-
 /***/ "./src/panel/first-mouse.js":
 /*!**********************************!*\
   !*** ./src/panel/first-mouse.js ***!
@@ -651,6 +615,9 @@ function () {
   }
 
   _createClass(MDPanel, [{
+    key: "getWindowData",
+    value: function getWindowData(key) {}
+  }, {
     key: "initilize",
     value: function initilize(options) {
       var Panel = NSPanel.alloc().init(),
@@ -690,49 +657,46 @@ function () {
       var delegate = new _mocha_js_delegate__WEBPACK_IMPORTED_MODULE_0___default.a({
         "webView:didChangeLocationWithinPageForFrame:": function webViewDidChangeLocationWithinPageForFrame(webView, webFrame) {
           var request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
+          var sketchData = JSON.parse(decodeURI(windowObject.valueForKey("_sketch_data")));
 
-          if (request) {
-            var sketchData = JSON.parse(decodeURI(windowObject.valueForKey("_sketch_data")));
+          if (request == "onWindowDidBlur") {
+            _first_mouse__WEBPACK_IMPORTED_MODULE_1___default()(webView, contentView);
+          }
 
-            if (request == "onWindowDidBlur") {
-              _first_mouse__WEBPACK_IMPORTED_MODULE_1___default()(webView, contentView);
-            }
+          if (request == "drag-end") {
+            _components_icons__WEBPACK_IMPORTED_MODULE_2__["default"].convertSvgToSymbol(sketchData);
+          }
 
-            if (request == "drag-end") {
-              _components_icons__WEBPACK_IMPORTED_MODULE_2__["default"].convertSvgToSymbol(sketchData);
-            }
+          if (request == "applyColor") {
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().applyColor(sketchData);
+          }
 
-            if (request == "applyColor") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().applyColor(sketchData);
-            }
+          if (request == "addGlobalSymbols") {
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalSymbols(sketchData);
+          }
 
-            if (request == "addGlobalSymbols") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalSymbols(sketchData);
-            }
+          if (request == "addGlobalColors") {
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalColors(sketchData);
+          }
 
-            if (request == "addGlobalColors") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalColors(sketchData);
-            }
+          if (request == "pickColor") {
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().pickColor(webView, sketchData);
+          }
 
-            if (request == "pickColor") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().pickColor(webView, sketchData);
-            }
+          if (request == "applyStyles") {
+            _components_type__WEBPACK_IMPORTED_MODULE_4__["default"].applyTypographyStyles(sketchData);
+          }
 
-            if (request == "applyStyles") {
-              _components_type__WEBPACK_IMPORTED_MODULE_4__["default"].applyTypographyStyles(sketchData);
-            }
+          if (request == "applyFakeData") {
+            _components_data__WEBPACK_IMPORTED_MODULE_6__["default"].applyFakeData(sketchData);
+          }
 
-            if (request == "applyFakeData") {
-              _components_data__WEBPACK_IMPORTED_MODULE_6__["default"].applyFakeData(sketchData);
-            }
+          if (request == "applyElevations") {
+            _components_elevations__WEBPACK_IMPORTED_MODULE_5__["default"].applyElevation(sketchData);
+          }
 
-            if (request == "applyElevations") {
-              _components_elevations__WEBPACK_IMPORTED_MODULE_5__["default"].applyElevation(sketchData);
-            }
-
-            if (request == "updateLayerMetadata") {
-              _components_metadata__WEBPACK_IMPORTED_MODULE_7__["default"].updateLayerMetadata(sketchData);
-            }
+          if (request == 'updateLayerMetadata') {
+            _components_metadata__WEBPACK_IMPORTED_MODULE_7__["default"].updateLayerMetadata(sketchData);
           }
 
           windowObject.evaluateWebScript("window.location.hash = '';");
@@ -828,6 +792,37 @@ module.exports = function (selectorHandlerDict, superclass) {
     }
   }
 };
+
+/***/ }),
+
+/***/ "./src/ui/settings.js":
+/*!****************************!*\
+  !*** ./src/ui/settings.js ***!
+  \****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../panel/index */ "./src/panel/index.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+
+
+/* harmony default export */ __webpack_exports__["default"] = (function () {
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId];
+
+  if (!browserWindow) {
+    var options = {
+      identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId,
+      width: 300,
+      height: 300,
+      url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "metadata"
+    };
+    var panel = new _panel_index__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
+    threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId] = panel;
+  }
+});
 
 /***/ }),
 
@@ -1308,4 +1303,4 @@ module.exports = require("sketch/settings");
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=init.js.map
+//# sourceMappingURL=settings.js.map

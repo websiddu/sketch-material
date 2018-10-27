@@ -1,30 +1,51 @@
 {
-  "compatibleVersion": 3,
   "bundleVersion": 1,
+  "name": "Sketch Material",
+  "authorEmail": "me@websiddu.com",
+  "version": "3",
+  "description": "Sketch material is a sketch plugin that will help you generate complex material components like tables, chips, forms etc…",
+  "author": "Siddhartha Gudipati",
+  "compatibleVersion": "52",
+  "identifier": "com.google.material2.active",
   "commands": [
     {
       "name": "Icons...",
-      "identifier": "styles",
-      "script": "init.js"
+      "identifier": "icons",
+      "script": "init.js",
+      "shortcut": "cmd + shift + i"
     },
     {
       "name": "Color...",
       "identifier": "color",
+      "script": "init.js",
+      "shortcut": "cmd + shift + c"
+    },
+    {
+      "name": "Typography...",
+      "identifier": "type",
+      "script": "init.js"
+    },
+    {
+      "name": "Elevations...",
+      "identifier": "elevation",
+      "script": "init.js"
+    },
+    {
+      "name": "Fake data...",
+      "identifier": "data",
       "script": "init.js"
     }
   ],
   "menu": {
-    "title": "Google Material (internal)",
+    "title": "✨ Sketch Material",
     "items": [
-      "styles",
-      "color"
+      "icons",
+      "color",
+      "type",
+      "elevation",
+      "data"
     ]
   },
-  "version": "0.1.0",
-  "name": "sketch-material",
-  "identifier": "sketch-material",
-  "disableCocoaScriptPreprocessor": true,
-  "appcast": "https://raw.githubusercontent.com//master/.appcast.xml",
-  "author": "Siddhartha",
-  "authorEmail": "gsid@google.com"
+  "appcast": "https://raw.githubusercontent.com/websiddu/sketch-material/master/.appcast.xml",
+  "disableCocoaScriptPreprocessor": true
 }

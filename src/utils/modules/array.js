@@ -1,3 +1,5 @@
+import ClassUtils from "./class";
+
 export default {
   find(format, container, returnArray) {
     if (!format || !format.key || !format.match) {
@@ -10,8 +12,8 @@ export default {
     if (container.pages) {
       items = container.pages();
     } else if (
-      this.is(container, MSSharedStyleContainer) ||
-      this.is(container, MSSharedTextStyleContainer)
+      ClassUtils.is(container, MSSharedStyleContainer) ||
+      ClassUtils.is(container, MSSharedTextStyleContainer)
     ) {
       items = container.objectsSortedByName();
     } else if (container.children) {

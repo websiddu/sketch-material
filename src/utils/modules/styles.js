@@ -1,13 +1,29 @@
-import ClassUtils from './class';
-import DocUtils from './doc';
-import DomUtils from './dom';
+import ClassUtils from "./class";
+import DocUtils from "./doc";
+import DomUtils from "./dom";
+import ArrayUtils from "./array";
+import ColorUtils from "./color";
 
 export default {
   getSharedTextStyleByName(name) {
-    var sharedStyles = Utils.doc()
+    var sharedStyles = DocUtils.doc()
       .documentData()
       .allTextStyles();
-    var style = Utils.find(
+    var style = ArrayUtils.find(
+      {
+        key: "(name != NULL) && (name == %@)",
+        match: name
+      },
+      sharedStyles
+    );
+    style = !style || ClassUtils.is(style, MSSharedStyle) ? style : style[0];
+    return style;
+  },
+  getSharedLayerStyleByName: function(name) {
+    var sharedStyles = DocUtils.doc()
+      .documentData()
+      .allLayerStyles();
+    var style = ArrayUtils.find(
       {
         key: "(name != NULL) && (name == %@)",
         match: name
@@ -26,11 +42,10 @@ export default {
         .documentData()
         .layerStyles();
     }
-
     var s = MSSharedStyle.alloc().initWithName_style(name, style);
     container.addSharedObject(s);
   },
-  createAndGetSharedTextStyleFromJson: function(name, json) {
+  createAndGetSharedTextStyleFromJson(name, json) {
     var style = this.getSharedTextStyleByName(name);
 
     if (style == 0 && json.color) {
@@ -78,5 +93,58 @@ export default {
     }
 
     return this.getSharedTextStyleByName(name);
+  },
+
+  applyFillsToStyle(style, fills) {
+    for (var i = 0; i < fills.length; i++) {
+      var fill = fills[i];
+      var color = ColorUtils.cssColorToMSColor(fill.color);
+      var styleFill = style.addStylePartOfType(0);
+      styleFill.setFillType(fill.type);
+      styleFill.color = color;
+      styleFill.isEnabled = true;
+    }
+  },
+
+  applyShadowsToStyle(style, shadows) {
+    for (var i = 0; i < shadows.length; i++) {
+      var shadow = shadows[i];
+      var color = ColorUtils.cssColorToMSColor(shadow.color);
+      var styleShadow = style.addStylePartOfType(2);
+
+      styleShadow.offsetX = shadow.x;
+      styleShadow.offsetY = shadow.y;
+      styleShadow.color = color;
+      styleShadow.blurRadius = shadow.blur;
+      styleShadow.spread = shadow.spread;
+      styleShadow.isEnabled = true;
+    }
+  },
+
+  applyBordersToStyle(style, borders) {
+    for (var i = 0; i < borders.length; i++) {
+      var border = borders[i];
+      var color = ColorUtils.cssColorToMSColor(border.color);
+      var styleBorder = style.addStylePartOfType(1);
+
+      styleBorder.color = color;
+      styleBorder.thickness = border.thickness;
+      styleBorder.position = border.position;
+    }
+  },
+
+  createAndGetSharedLayerStyleFromJson(name, json) {
+    var style = this.getSharedLayerStyleByName(name);
+
+    if (style == 0) {
+      style = MSStyle.alloc().init();
+      if (json.fills) this.applyFillsToStyle(style, json.fills);
+      if (json.shadows) this.applyShadowsToStyle(style, json.shadows);
+      if (json.borders) this.applyBordersToStyle(style, json.borders);
+      style.contextSettings().setOpacity(1);
+      this.addSharedStylesToDoc(name, style, "layer");
+    }
+
+    return this.getSharedLayerStyleByName(name);
   }
 };
