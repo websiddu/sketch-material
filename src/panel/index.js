@@ -1,7 +1,10 @@
 import MochaJSDelegate from "./mocha-js-delegate";
-import firstMouseAcceptor from './first-mouse';
-import Icons from '../components/icons';
-import Colors from '../components/color'
+import firstMouseAcceptor from "./first-mouse";
+import Icons from "../components/icons";
+import Colors from "../components/color";
+import Type from "../components/type";
+import Elevation from "../components/elevations";
+import FakeData from "../components/data";
 
 export class MDPanel {
   constructor(options) {
@@ -66,18 +69,59 @@ export class MDPanel {
       ) {
         const request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
 
-        if (request == 'onWindowDidBlur') {
+        if (request == "onWindowDidBlur") {
           firstMouseAcceptor(webView, contentView);
         }
 
-        if(request == 'drag-end') {
-          var data = JSON.parse(decodeURI(windowObject.valueForKey("draggedIcon")));
+        if (request == "drag-end") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("draggedIcon"))
+          );
           Icons.convertSvgToSymbol(data);
         }
 
-        if (request == 'applyColor') {
-          var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedColor")));
+        if (request == "applyColor") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("appliedColor"))
+          );
           Colors().applyColor(data);
+        }
+        if (request == "addGlobalSymbols") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("colorGroups"))
+          );
+          Colors().addGlobalSymbols(data);
+        }
+
+        if (request == "addGlobalColors") {
+          var data = JSON.parse(decodeURI(windowObject.valueForKey("colors")));
+          Colors().addGlobalColors(data);
+        }
+
+        if (request == "pickColor") {
+          var data = JSON.parse(decodeURI(windowObject.valueForKey("cca_clr")));
+          Colors().pickColor(webView, data);
+        }
+
+        if (request == "applyStyles") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("appliedStyles"))
+          );
+          Type.applyTypographyStyles(data);
+        }
+
+        if (request == "applyFakeData") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("fakeData"))
+          );
+          FakeData.applyFakeData(data);
+        }
+
+        if (request == "applyElevations") {
+          var data = JSON.parse(
+            decodeURI(windowObject.valueForKey("appliedElevations"))
+          );
+          Elevation.applyElevation(data);
         }
 
         windowObject.evaluateWebScript("window.location.hash = '';");
@@ -105,7 +149,5 @@ export class MDPanel {
     titlebarView.setTransparent(true);
     titlebarView.setBackgroundColor(titleBgColor);
     titlebarContainerView.superview().setBackgroundColor(titleBgColor);
-
-
   }
 }

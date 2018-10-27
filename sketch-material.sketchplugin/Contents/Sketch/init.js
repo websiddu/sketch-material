@@ -263,6 +263,99 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/components/data.js":
+/*!********************************!*\
+  !*** ./src/components/data.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  shuffle: function shuffle(array) {
+    var currentIndex = array.length,
+        temporaryValue,
+        randomIndex; // While there remain elements to shuffle...
+
+    while (0 !== currentIndex) {
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1; // And swap it with the current element.
+
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+  },
+  applyFakeData: function applyFakeData(fakedata) {
+    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
+
+    if (selection.count() <= 0) {
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a text layer first");
+    } else {
+      var selecitonLoop = selection.objectEnumerator();
+      var shuffle = this.shuffle(fakedata.data);
+      var i = 0,
+          sel;
+
+      while (sel = selecitonLoop.nextObject()) {
+        if (_utils__WEBPACK_IMPORTED_MODULE_0__["default"].is(sel, MSTextLayer)) {
+          if (i > shuffle.length) i = 0;
+          sel.setStringValue(shuffle[i]);
+          i++;
+        }
+      }
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./src/components/elevations.js":
+/*!**************************************!*\
+  !*** ./src/components/elevations.js ***!
+  \**************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  applyElevation: function applyElevation(elevation) {
+    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
+    var name = "Elevation/" + elevation;
+
+    if (elevation.name) {
+      name = "Elevation/" + elevation.name;
+    }
+
+    var elevationName = name;
+
+    if (selection.count() <= 0) {
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer to apply the elevation");
+      return false;
+    }
+
+    var style = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].createAndGetSharedLayerStyleFromJson(elevationName, elevation);
+
+    for (var i = 0; i < selection.count(); i++) {
+      var target = selection[i];
+      target.sharedStyle = style;
+    }
+
+    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
+  }
+});
+
+/***/ }),
+
 /***/ "./src/components/icons.js":
 /*!*********************************!*\
   !*** ./src/components/icons.js ***!
@@ -342,6 +435,45 @@ __webpack_require__.r(__webpack_exports__);
         symbolInstance.setValue_forOverridePoint_(selectedSymbol.symbolID(), overridePoint);
       }
     });
+  }
+});
+
+/***/ }),
+
+/***/ "./src/components/type.js":
+/*!********************************!*\
+  !*** ./src/components/type.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  applyTypographyStyles: function applyTypographyStyles(style) {
+    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
+
+    if (selection.count() <= 0) {
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a text layer to apply style");
+    } else {
+      style.color = {
+        red: style.color_red,
+        blue: style.color_blue,
+        green: style.color_green,
+        alpha: style.color_alpha
+      };
+      var style = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].createAndGetSharedTextStyleFromJson(style.name, style),
+          selecitonLoop = selection.objectEnumerator(),
+          sel;
+
+      while (sel = selecitonLoop.nextObject()) {
+        sel.sharedStyle = style;
+      }
+
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
+    }
   }
 });
 
@@ -430,11 +562,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _first_mouse__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_first_mouse__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _components_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/icons */ "./src/components/icons.js");
 /* harmony import */ var _components_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/color */ "./src/components/color.js");
+/* harmony import */ var _components_type__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/type */ "./src/components/type.js");
+/* harmony import */ var _components_elevations__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/elevations */ "./src/components/elevations.js");
+/* harmony import */ var _components_data__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/data */ "./src/components/data.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
 
 
 
@@ -495,18 +633,48 @@ function () {
         "webView:didChangeLocationWithinPageForFrame:": function webViewDidChangeLocationWithinPageForFrame(webView, webFrame) {
           var request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
 
-          if (request == 'onWindowDidBlur') {
+          if (request == "onWindowDidBlur") {
             _first_mouse__WEBPACK_IMPORTED_MODULE_1___default()(webView, contentView);
           }
 
-          if (request == 'drag-end') {
+          if (request == "drag-end") {
             var data = JSON.parse(decodeURI(windowObject.valueForKey("draggedIcon")));
             _components_icons__WEBPACK_IMPORTED_MODULE_2__["default"].convertSvgToSymbol(data);
           }
 
-          if (request == 'applyColor') {
+          if (request == "applyColor") {
             var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedColor")));
             Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().applyColor(data);
+          }
+
+          if (request == "addGlobalSymbols") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("colorGroups")));
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalSymbols(data);
+          }
+
+          if (request == "addGlobalColors") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("colors")));
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalColors(data);
+          }
+
+          if (request == "pickColor") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("cca_clr")));
+            Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().pickColor(webView, data);
+          }
+
+          if (request == "applyStyles") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedStyles")));
+            _components_type__WEBPACK_IMPORTED_MODULE_4__["default"].applyTypographyStyles(data);
+          }
+
+          if (request == "applyFakeData") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("fakeData")));
+            _components_data__WEBPACK_IMPORTED_MODULE_6__["default"].applyFakeData(data);
+          }
+
+          if (request == "applyElevations") {
+            var data = JSON.parse(decodeURI(windowObject.valueForKey("appliedElevations")));
+            _components_elevations__WEBPACK_IMPORTED_MODULE_5__["default"].applyElevation(data);
           }
 
           windowObject.evaluateWebScript("window.location.hash = '';");
@@ -644,6 +812,8 @@ var Utils = Object.assign({}, _modules_array__WEBPACK_IMPORTED_MODULE_0__["defau
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _class__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./class */ "./src/utils/modules/class.js");
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   find: function find(format, container, returnArray) {
     if (!format || !format.key || !format.match) {
@@ -656,7 +826,7 @@ __webpack_require__.r(__webpack_exports__);
 
     if (container.pages) {
       items = container.pages();
-    } else if (this.is(container, MSSharedStyleContainer) || this.is(container, MSSharedTextStyleContainer)) {
+    } else if (_class__WEBPACK_IMPORTED_MODULE_0__["default"].is(container, MSSharedStyleContainer) || _class__WEBPACK_IMPORTED_MODULE_0__["default"].is(container, MSSharedTextStyleContainer)) {
       items = container.objectsSortedByName();
     } else if (container.children) {
       items = container.children();
@@ -727,6 +897,24 @@ __webpack_require__.r(__webpack_exports__);
         b = parseInt(hex.substring(5, 7), 16) / 255,
         a = 1;
     return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+  },
+  rgbaToMSColor: function rgbaToMSColor(rgba) {
+    rgba = rgba.replace("rgba(", "").replace(")", "");
+    rgba = rgba.split(",");
+    var r = parseFloat(rgba[0]) / 255,
+        g = parseFloat(rgba[1]) / 255,
+        b = parseFloat(rgba[2]) / 255,
+        a = parseFloat(rgba[3]);
+    return MSColor.colorWithRed_green_blue_alpha(r, g, b, a);
+  },
+  cssColorToMSColor: function cssColorToMSColor(color) {
+    if (color.type == "hex") {
+      return this.hexToMSColor(color.value);
+    }
+
+    if (color.type == "rgba") {
+      return this.rgbaToMSColor(color.value);
+    }
   }
 });
 
@@ -834,13 +1022,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _class__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./class */ "./src/utils/modules/class.js");
 /* harmony import */ var _doc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./doc */ "./src/utils/modules/doc.js");
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dom */ "./src/utils/modules/dom.js");
+/* harmony import */ var _array__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./array */ "./src/utils/modules/array.js");
+/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./color */ "./src/utils/modules/color.js");
+
+
 
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   getSharedTextStyleByName: function getSharedTextStyleByName(name) {
-    var sharedStyles = Utils.doc().documentData().allTextStyles();
-    var style = Utils.find({
+    var sharedStyles = _doc__WEBPACK_IMPORTED_MODULE_1__["default"].doc().documentData().allTextStyles();
+    var style = _array__WEBPACK_IMPORTED_MODULE_3__["default"].find({
+      key: "(name != NULL) && (name == %@)",
+      match: name
+    }, sharedStyles);
+    style = !style || _class__WEBPACK_IMPORTED_MODULE_0__["default"].is(style, MSSharedStyle) ? style : style[0];
+    return style;
+  },
+  getSharedLayerStyleByName: function getSharedLayerStyleByName(name) {
+    var sharedStyles = _doc__WEBPACK_IMPORTED_MODULE_1__["default"].doc().documentData().allLayerStyles();
+    var style = _array__WEBPACK_IMPORTED_MODULE_3__["default"].find({
       key: "(name != NULL) && (name == %@)",
       match: name
     }, sharedStyles);
@@ -893,6 +1094,53 @@ __webpack_require__.r(__webpack_exports__);
     }
 
     return this.getSharedTextStyleByName(name);
+  },
+  applyFillsToStyle: function applyFillsToStyle(style, fills) {
+    for (var i = 0; i < fills.length; i++) {
+      var fill = fills[i];
+      var color = _color__WEBPACK_IMPORTED_MODULE_4__["default"].cssColorToMSColor(fill.color);
+      var styleFill = style.addStylePartOfType(0);
+      styleFill.setFillType(fill.type);
+      styleFill.color = color;
+      styleFill.isEnabled = true;
+    }
+  },
+  applyShadowsToStyle: function applyShadowsToStyle(style, shadows) {
+    for (var i = 0; i < shadows.length; i++) {
+      var shadow = shadows[i];
+      var color = _color__WEBPACK_IMPORTED_MODULE_4__["default"].cssColorToMSColor(shadow.color);
+      var styleShadow = style.addStylePartOfType(2);
+      styleShadow.offsetX = shadow.x;
+      styleShadow.offsetY = shadow.y;
+      styleShadow.color = color;
+      styleShadow.blurRadius = shadow.blur;
+      styleShadow.spread = shadow.spread;
+      styleShadow.isEnabled = true;
+    }
+  },
+  applyBordersToStyle: function applyBordersToStyle(style, borders) {
+    for (var i = 0; i < borders.length; i++) {
+      var border = borders[i];
+      var color = _color__WEBPACK_IMPORTED_MODULE_4__["default"].cssColorToMSColor(border.color);
+      var styleBorder = style.addStylePartOfType(1);
+      styleBorder.color = color;
+      styleBorder.thickness = border.thickness;
+      styleBorder.position = border.position;
+    }
+  },
+  createAndGetSharedLayerStyleFromJson: function createAndGetSharedLayerStyleFromJson(name, json) {
+    var style = this.getSharedLayerStyleByName(name);
+
+    if (style == 0) {
+      style = MSStyle.alloc().init();
+      if (json.fills) this.applyFillsToStyle(style, json.fills);
+      if (json.shadows) this.applyShadowsToStyle(style, json.shadows);
+      if (json.borders) this.applyBordersToStyle(style, json.borders);
+      style.contextSettings().setOpacity(1);
+      this.addSharedStylesToDoc(name, style, "layer");
+    }
+
+    return this.getSharedLayerStyleByName(name);
   }
 });
 
