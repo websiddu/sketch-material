@@ -29,7 +29,7 @@ MD['Typography'] = function () {
       var selecitonLoop = selection.objectEnumerator();
 
       while(sel = selecitonLoop.nextObject()) {
-        sel.setStyle(MD.sharedTextStyle(styleString));
+        sel.sharedStyle = MD.sharedTextStyle(styleString);
       }
 
     }

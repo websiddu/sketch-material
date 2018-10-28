@@ -9,8 +9,7 @@ MD.extend({
     return MSLayerGroup.new();
   },
   addShape: function () {
-    var shape = MSRectangleShape.alloc().initWithFrame(NSMakeRect(0, 0, 100, 100));
-    return MSShapeGroup.shapeWithPath(shape);
+    return MSShapeGroup.shapeWithRect(NSMakeRect(0, 0, 100, 100));
   },
   addText: function (container, string) {
     var text = MSTextLayer.new();

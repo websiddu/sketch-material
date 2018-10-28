@@ -497,7 +497,7 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/styles",
-      url: this.baseUrl + "/styles",
+      url: this.baseUrl + "/typography",
       remote: true,
       width: 500,
       height: 600,

@@ -433,7 +433,7 @@ sketchObjectFromArchiveData: function(archiveData) {
     if (container.addSharedStyleWithName_firstInstance) {
       container.addSharedStyleWithName_firstInstance(name, textStyle);
     } else {
-      var s = MSSharedStyle.alloc().initWithName_firstInstance(name, textStyle);
+      var s = MSSharedStyle.alloc().initWithName_style(name, textStyle);
       container.addSharedObject(s);
     }
   },

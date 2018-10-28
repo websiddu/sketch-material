@@ -19,8 +19,8 @@ var MD = {
 
     coscript.setShouldKeepAround(false);
 
-    this.baseUrl = "https://sketch-material.firebaseapp.com";
-    // this.baseUrl = "http://0.0.0.0:8031";
+    // this.baseUrl = "https://sketch-material.firebaseapp.com";
+    this.baseUrl = "http://0.0.0.0:8080";
 
     if (command && command == "init") {
       // this.menu();

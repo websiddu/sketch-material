@@ -1,7 +1,7 @@
 //shared.js
 MD.extend({
   sharedLayerStyle: function(name, color, borderColor) {
-    var sharedStyles = this.documentData.layerStyles(),
+    var sharedStyles = this.documentData.allLayerStyles(),
       style = this.find({
         key: "(name != NULL) && (name == %@)",
         match: name
@@ -33,7 +33,7 @@ MD.extend({
   },
 
   sharedTextStyle: function(name, color, alignment, fontFamily, fontSize, lineHeight, leading) {
-    var sharedStyles = this.document.documentData().layerTextStyles(),
+    var sharedStyles = this.document.documentData().allTextStyles(),
     style = this.find({
       key: "(name != NULL) && (name == %@)",
       match: name

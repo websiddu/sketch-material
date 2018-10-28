@@ -19,8 +19,8 @@ var MD = {
 
     coscript.setShouldKeepAround(false);
 
-    this.baseUrl = "https://sketch-material.firebaseapp.com";
-    // this.baseUrl = "http://0.0.0.0:8031";
+    // this.baseUrl = "https://sketch-material.firebaseapp.com";
+    this.baseUrl = "http://0.0.0.0:8080";
 
     if (command && command == "init") {
       // this.menu();
@@ -153,8 +153,7 @@ MD.extend({
     return MSLayerGroup.new();
   },
   addShape: function () {
-    var shape = MSRectangleShape.alloc().initWithFrame(NSMakeRect(0, 0, 100, 100));
-    return MSShapeGroup.shapeWithPath(shape);
+    return MSShapeGroup.shapeWithRect(NSMakeRect(0, 0, 100, 100));
   },
   addText: function (container, string) {
     var text = MSTextLayer.new();
@@ -778,7 +777,7 @@ MD.extend({
 //shared.js
 MD.extend({
   sharedLayerStyle: function(name, color, borderColor) {
-    var sharedStyles = this.documentData.layerStyles(),
+    var sharedStyles = this.documentData.allLayerStyles(),
       style = this.find({
         key: "(name != NULL) && (name == %@)",
         match: name
@@ -810,7 +809,7 @@ MD.extend({
   },
 
   sharedTextStyle: function(name, color, alignment, fontFamily, fontSize, lineHeight, leading) {
-    var sharedStyles = this.document.documentData().layerTextStyles(),
+    var sharedStyles = this.document.documentData().allTextStyles(),
     style = this.find({
       key: "(name != NULL) && (name == %@)",
       match: name
@@ -845,61 +844,74 @@ MD.extend({
 
 // colors.js
 MD.extend({
-    getSelectionColor: function(){
+    getSelectionColor: function () {
         var self = this,
             colors = [];
         for (var i = 0; i < this.selection.count(); i++) {
             var layer = this.selection[i];
-            if ( !this.is(layer, MSSliceLayer) ) {
+            if (!this.is(layer, MSSliceLayer)) {
                 var layerStyle = layer.style(),
                     fills = this.getFills(layerStyle),
                     borders = this.getBorders(layerStyle);
 
                 for (var n = 0; n < fills.length; n++) {
                     var fill = fills[n];
-                    if(fill.fillType != "gradient"){
-                        colors.push({name: '', color: fill.color});
-                    }
-                    else{
+                    if (fill.fillType != "gradient") {
+                        colors.push({
+                            name: '',
+                            color: fill.color
+                        });
+                    } else {
                         for (var w = 0; w < fill.gradient.colorStops.length; w++) {
                             var gColor = fill.gradient.colorStops[w];
-                            colors.push({name: '', color: gColor.color});
+                            colors.push({
+                                name: '',
+                                color: gColor.color
+                            });
                         }
                     }
                 }
                 for (var n = 0; n < borders.length; n++) {
                     var border = borders[n];
-                    if(border.fillType != "gradient"){
-                        colors.push({name: '', color: border.color});
-                    }
-                    else{
+                    if (border.fillType != "gradient") {
+                        colors.push({
+                            name: '',
+                            color: border.color
+                        });
+                    } else {
                         for (var w = 0; w < border.gradient.colorStops.length; w++) {
                             var gColor = border.gradient.colorStops[w];
-                            colors.push({name: '', color: gColor.color});
+                            colors.push({
+                                name: '',
+                                color: gColor.color
+                            });
                         }
                     }
                 }
             }
 
-            if ( this.is(layer, MSTextLayer) ) {
-                colors.push({name: '', color: this.colorToJSON(layer.textColor())});
+            if (this.is(layer, MSTextLayer)) {
+                colors.push({
+                    name: '',
+                    color: this.colorToJSON(layer.textColor())
+                });
             }
         };
 
         return colors;
     },
-    colorNames: function(colors){
+    colorNames: function (colors) {
         var colorNames = {};
 
-        colors.forEach(function(color){
+        colors.forEach(function (color) {
             var colorID = color.color["argb-hex"];
             colorNames[colorID] = color.name;
         });
         return colorNames;
     },
-    manageColors: function(){
+    manageColors: function () {
         var self = this,
-            data = (this.configs.colors)? this.configs.colors: [];
+            data = (this.configs.colors) ? this.configs.colors : [];
 
         return this.MDPanel({
             url: this.pluginSketch + "/panel/colors.html",
@@ -908,7 +920,7 @@ MD.extend({
             data: data,
             floatWindow: true,
             identifier: "com.utom.measure.colors",
-            callback: function( data ){
+            callback: function (data) {
                 var colors = data;
                 self.configs = self.setConfigs({
                     colors: colors,
@@ -916,33 +928,32 @@ MD.extend({
                 });
 
             },
-            addCallback: function(windowObject){
+            addCallback: function (windowObject) {
                 self.updateContext();
                 self.init(self.context);
                 var data = self.getSelectionColor();
-                if(data.length > 0){
+                if (data.length > 0) {
                     windowObject.evaluateWebScript("addColors(" + JSON.stringify(data) + ");");
                 }
             },
-            importCallback: function(windowObject){
+            importCallback: function (windowObject) {
                 var data = self.importColors();
-                if(data.length > 0){
+                if (data.length > 0) {
                     windowObject.evaluateWebScript("addColors(" + JSON.stringify(data) + ");");
                     return true;
-                }
-                else{
+                } else {
                     return false;
                 }
             },
-            exportCallback: function(windowObject){
+            exportCallback: function (windowObject) {
                 return self.exportColors();
             },
-            exportXMLCallback: function(windowObject){
+            exportXMLCallback: function (windowObject) {
                 return self.exportColorsXML();
             }
         });
     },
-    importColors: function(){
+    importColors: function () {
         var openPanel = NSOpenPanel.openPanel();
         openPanel.setCanChooseDirectories(false);
         openPanel.setCanCreateDirectories(false);
@@ -957,20 +968,20 @@ MD.extend({
         var colors = JSON.parse(NSString.stringWithContentsOfFile_encoding_error(openPanel.URL().path(), 4, nil)),
             colorsData = [];
 
-        colors.forEach(function(color){
-            if( color.color && color.color.a && color.color.r && color.color.g && color.color.b && color.color["argb-hex"] && color.color["color-hex"] && color.color["css-rgba"] && color.color["ui-color"] ){
+        colors.forEach(function (color) {
+            if (color.color && color.color.a && color.color.r && color.color.g && color.color.b && color.color["argb-hex"] && color.color["color-hex"] && color.color["css-rgba"] && color.color["ui-color"]) {
                 colorsData.push(color);
             }
         });
 
-        if(colorsData.length <= 0){
+        if (colorsData.length <= 0) {
             return false;
         }
         return colorsData;
 
     },
-    exportColors: function(){
-        var filePath = this.document.fileURL()? this.document.fileURL().path().stringByDeletingLastPathComponent(): "~";
+    exportColors: function () {
+        var filePath = this.document.fileURL() ? this.document.fileURL().path().stringByDeletingLastPathComponent() : "~";
         var fileName = this.document.displayName().stringByDeletingPathExtension();
         var savePanel = NSSavePanel.savePanel();
 
@@ -997,8 +1008,8 @@ MD.extend({
 
         return true;
     },
-    exportColorsXML: function(){
-        var filePath = this.document.fileURL()? this.document.fileURL().path().stringByDeletingLastPathComponent(): "~";
+    exportColorsXML: function () {
+        var filePath = this.document.fileURL() ? this.document.fileURL().path().stringByDeletingLastPathComponent() : "~";
         var fileName = this.document.displayName().stringByDeletingPathExtension();
         var savePanel = NSSavePanel.savePanel();
 
@@ -1020,8 +1031,8 @@ MD.extend({
 
         XMLContent.push("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         XMLContent.push("<resources>");
-        this.configs.colors.forEach(function(color){
-            if(color.name){
+        this.configs.colors.forEach(function (color) {
+            if (color.name) {
                 XMLContent.push("\t<color name=\"" + color.name + "\">" + color.color["argb-hex"] + "</color>");
             }
         });
@@ -1536,7 +1547,7 @@ MD.extend({
 
     return this.MDPanel({
       // url: "http://localhost:8031/styles",
-      url: this.baseUrl + "/styles",
+      url: this.baseUrl + "/typography",
       remote: true,
       width: 500,
       height: 600,
@@ -2047,7 +2058,7 @@ sketchObjectFromArchiveData: function(archiveData) {
     if (container.addSharedStyleWithName_firstInstance) {
       container.addSharedStyleWithName_firstInstance(name, textStyle);
     } else {
-      var s = MSSharedStyle.alloc().initWithName_firstInstance(name, textStyle);
+      var s = MSSharedStyle.alloc().initWithName_style(name, textStyle);
       container.addSharedObject(s);
     }
   },
@@ -2352,42 +2363,54 @@ MD['Color'] = function () {
 
   var _showColorPanel;
 
-  var _setBorderColor = function(layer, color) {
-    if (layer.class() == "MSShapeGroup") {
-        var borders = layer.style().enabledBorders();
-        if (borders.count() > 0 && borders.lastObject().fillType() == 0) {
-            borders.lastObject().setColor(color);
-        } else {
-            var border = layer.style().addStylePartOfType(1);
-            border.setFillType(0);
-            border.setColor(color);
-            border.setPosition(2);
-            border.setThickness(1);
-        }
+  var _setBorderColor = function (layer, color) {
+    var layerClass = layer.class();
+    if (layerClass == "MSRectangleShape" ||
+      layerClass == "MSOvalShape" ||
+      layerClass == "MSTriangleShape" ||
+      layerClass == "MSStarShape" ||
+      layerClass == 'MSPolygonShape'
+    ) {
+      var borders = layer.style().enabledBorders();
+      if (borders.count() > 0 && borders.lastObject().fillType() == 0) {
+        borders.lastObject().setColor(color);
+      } else {
+        var border = layer.style().addStylePartOfType(1);
+        border.setFillType(0);
+        border.setColor(color);
+        border.setPosition(2);
+        border.setThickness(1);
+      }
     }
   }
 
-  var _setFillColor = function(layer, color) {
-      if (layer.class() == "MSShapeGroup") {
-          var fills = layer.style().enabledFills();
-          if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
-              fills.lastObject().setColor(color);
-          } else {
-              var fill = layer.style().addStylePartOfType(0);
-              fill.setFillType(0);
-              fill.setColor(color);
-          }
+  var _setFillColor = function (layer, color) {
+    var layerClass = layer.class();
+    if (layerClass == "MSRectangleShape" ||
+      layerClass == "MSOvalShape" ||
+      layerClass == "MSTriangleShape" ||
+      layerClass == "MSStarShape" ||
+      layerClass == 'MSPolygonShape'
+    ) {
+      var fills = layer.style().enabledFills();
+      if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
+        fills.lastObject().setColor(color);
+      } else {
+        var fill = layer.style().addStylePartOfType(0);
+        fill.setFillType(0);
+        fill.setColor(color);
       }
-      if (layer.class() == "MSTextLayer") {
-          layer.setTextColor(color);
-      }
+    }
+    if (layer.class() == "MSTextLayer") {
+      layer.setTextColor(color);
+    }
   }
 
-  _showColorPanel = function() {
+  _showColorPanel = function () {
     MD.colorPanel();
   }
 
-  _applyColor = function(rawColor) {
+  _applyColor = function (rawColor) {
 
     var doc = NSDocumentController.sharedDocumentController().currentDocument();
     var selection = doc.selectedLayers().layers();
@@ -2396,10 +2419,10 @@ MD['Color'] = function () {
       MD.message("Select a layer to apply color");
     } else {
       var selecitonLoop = selection.objectEnumerator();
-      while(sel = selecitonLoop.nextObject()) {
+      while (sel = selecitonLoop.nextObject()) {
         var nsColor;
 
-        if(rawColor.color.startsWith("#") > 0) {
+        if (rawColor.color.startsWith("#") > 0) {
           nsColor = MD.hexToMSColor(rawColor.color);
         }
 
@@ -2407,12 +2430,12 @@ MD['Color'] = function () {
           nsColor = MD.rgbaToMSColor(rawColor.color);
         }
 
-        if(!nsColor) {
+        if (!nsColor) {
           MD.message("Can't find the color!");
           return;
         }
 
-        if(rawColor.type == 'border') {
+        if (rawColor.type == 'border') {
           _setBorderColor(sel, nsColor);
         } else {
           _setFillColor(sel, nsColor)
@@ -3899,7 +3922,7 @@ MD['Typography'] = function () {
       var selecitonLoop = selection.objectEnumerator();
 
       while(sel = selecitonLoop.nextObject()) {
-        sel.setStyle(MD.sharedTextStyle(styleString));
+        sel.sharedStyle = MD.sharedTextStyle(styleString);
       }
 
     }
