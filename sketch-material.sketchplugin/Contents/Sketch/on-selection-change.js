@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/init.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/handlers/on-selection-change.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -522,28 +522,58 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/init.js":
-/*!*********************!*\
-  !*** ./src/init.js ***!
-  \*********************/
-/*! exports provided: default */
+/***/ "./src/handlers/on-selection-change.js":
+/*!*********************************************!*\
+  !*** ./src/handlers/on-selection-change.js ***!
+  \*********************************************/
+/*! exports provided: onSelectionChanged */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./panel/index */ "./src/panel/index.js");
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/constants */ "./src/common/constants.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onSelectionChanged", function() { return onSelectionChanged; });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../panel/index */ "./src/panel/index.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
 
 
-/* harmony default export */ __webpack_exports__["default"] = (function () {
-  var options = {
-    identifier: 'unique.id',
-    width: 320,
-    height: 524,
-    url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + 'm2'
-  };
-  var panel = new _panel_index__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
-});
+
+
+var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
+
+function onSelectionChanged(context) {
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_2__["default"].layerSettingsPanelId];
+
+  if (!browserWindow) {
+    return;
+  }
+
+  var action = context.actionContext;
+  var selection = action.newSelection;
+  var selecitonLoop = selection.objectEnumerator(),
+      sel;
+
+  while (sel = selecitonLoop.nextObject()) {
+    var settingKeys = Settings.layerSettingForKey(sel, "keys");
+    var settingsJSON = [];
+
+    if (settingKeys) {
+      var keys = settingKeys.slice(0, -1).split("|");
+
+      for (var i = 0; i < keys.length; i++) {
+        settingsJSON.push({
+          key: keys[i],
+          value: Settings.layerSettingForKey(sel, keys[i])
+        });
+      }
+
+      log(settingsJSON);
+    }
+
+    browserWindow.windowObject.evaluateWebScript("window.vm.$store.state.layerMetadata=".concat(JSON.stringify(settingsJSON), ";"));
+  }
+}
 
 /***/ }),
 
@@ -1295,6 +1325,7 @@ module.exports = require("sketch/settings");
     exports[key](context);
   }
 }
+that['onSelectionChanged'] = __skpm_run.bind(this, 'onSelectionChanged');
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=init.js.map
+//# sourceMappingURL=on-selection-change.js.map

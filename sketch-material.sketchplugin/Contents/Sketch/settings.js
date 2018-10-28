@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/init.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/ui/settings.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -522,31 +522,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/init.js":
-/*!*********************!*\
-  !*** ./src/init.js ***!
-  \*********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./panel/index */ "./src/panel/index.js");
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./common/constants */ "./src/common/constants.js");
-
-
-/* harmony default export */ __webpack_exports__["default"] = (function () {
-  var options = {
-    identifier: 'unique.id',
-    width: 320,
-    height: 524,
-    url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + 'm2'
-  };
-  var panel = new _panel_index__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
-});
-
-/***/ }),
-
 /***/ "./src/panel/first-mouse.js":
 /*!**********************************!*\
   !*** ./src/panel/first-mouse.js ***!
@@ -817,6 +792,37 @@ module.exports = function (selectorHandlerDict, superclass) {
     }
   }
 };
+
+/***/ }),
+
+/***/ "./src/ui/settings.js":
+/*!****************************!*\
+  !*** ./src/ui/settings.js ***!
+  \****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _panel_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../panel/index */ "./src/panel/index.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+
+
+/* harmony default export */ __webpack_exports__["default"] = (function () {
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId];
+
+  if (!browserWindow) {
+    var options = {
+      identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId,
+      width: 300,
+      height: 300,
+      url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "metadata"
+    };
+    var panel = new _panel_index__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
+    threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId] = panel;
+  }
+});
 
 /***/ }),
 
@@ -1297,4 +1303,4 @@ module.exports = require("sketch/settings");
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=init.js.map
+//# sourceMappingURL=settings.js.map

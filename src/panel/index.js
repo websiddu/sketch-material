@@ -5,6 +5,7 @@ import Colors from "../components/color";
 import Type from "../components/type";
 import Elevation from "../components/elevations";
 import FakeData from "../components/data";
+import Metadata from "../components/metadata";
 
 export class MDPanel {
   constructor(options) {
@@ -19,10 +20,12 @@ export class MDPanel {
     this.initilize(this.options);
   }
 
+  getWindowData(key) {}
+
   initilize(options) {
     const Panel = NSPanel.alloc().init(),
       colorWhite = NSColor.colorWithRed_green_blue_alpha(1, 1, 1, 1),
-      frame = NSMakeRect(0, 0, options.width, options.height + 32),
+      frame = NSMakeRect(0, 0, options.width, options.height + 24),
       titleBgColor = colorWhite,
       contentBgColor = colorWhite,
       threadDictionary = NSThread.mainThread().threadDictionary(),
@@ -37,7 +40,7 @@ export class MDPanel {
         .view(),
       titlebarContainerView = titlebarView.superview();
 
-    threadDictionary[this.options.identifier] = Panel;
+    // threadDictionary[this.options.identifier] = this;
 
     Panel.setTitleVisibility(NSWindowTitleHidden);
     Panel.setTitlebarAppearsTransparent(true);
@@ -62,66 +65,57 @@ export class MDPanel {
     contentView.addSubview(webView);
     const windowObject = webView.windowScriptObject();
 
+    this.webView = webView;
+    this.windowObject = windowObject;
+
     const delegate = new MochaJSDelegate({
       "webView:didChangeLocationWithinPageForFrame:": function(
         webView,
         webFrame
       ) {
         const request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
+        const sketchData = JSON.parse(
+          decodeURI(windowObject.valueForKey("_sketch_data"))
+        );
 
         if (request == "onWindowDidBlur") {
           firstMouseAcceptor(webView, contentView);
         }
 
         if (request == "drag-end") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("draggedIcon"))
-          );
-          Icons.convertSvgToSymbol(data);
+          Icons.convertSvgToSymbol(sketchData);
         }
 
         if (request == "applyColor") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("appliedColor"))
-          );
-          Colors().applyColor(data);
+          Colors().applyColor(sketchData);
         }
+
         if (request == "addGlobalSymbols") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("colorGroups"))
-          );
-          Colors().addGlobalSymbols(data);
+          Colors().addGlobalSymbols(sketchData);
         }
 
         if (request == "addGlobalColors") {
-          var data = JSON.parse(decodeURI(windowObject.valueForKey("colors")));
-          Colors().addGlobalColors(data);
+          Colors().addGlobalColors(sketchData);
         }
 
         if (request == "pickColor") {
-          var data = JSON.parse(decodeURI(windowObject.valueForKey("cca_clr")));
-          Colors().pickColor(webView, data);
+          Colors().pickColor(webView, sketchData);
         }
 
         if (request == "applyStyles") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("appliedStyles"))
-          );
-          Type.applyTypographyStyles(data);
+          Type.applyTypographyStyles(sketchData);
         }
 
         if (request == "applyFakeData") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("fakeData"))
-          );
-          FakeData.applyFakeData(data);
+          FakeData.applyFakeData(sketchData);
         }
 
         if (request == "applyElevations") {
-          var data = JSON.parse(
-            decodeURI(windowObject.valueForKey("appliedElevations"))
-          );
-          Elevation.applyElevation(data);
+          Elevation.applyElevation(sketchData);
+        }
+
+        if(request == 'updateLayerMetadata') {
+          Metadata.updateLayerMetadata(sketchData);
         }
 
         windowObject.evaluateWebScript("window.location.hash = '';");
@@ -141,11 +135,11 @@ export class MDPanel {
     });
     closeButton.setAction("callAction:");
 
-    closeButton.setFrameOrigin(NSMakePoint(8, 8));
+    closeButton.setFrameOrigin(NSMakePoint(8, 0));
     titlebarContainerView.setFrame(
-      NSMakeRect(0, options.height, options.width, 32)
+      NSMakeRect(0, options.height, options.width, 24)
     );
-    titlebarView.setFrameSize(NSMakeSize(options.width, 32));
+    titlebarView.setFrameSize(NSMakeSize(options.width, 24));
     titlebarView.setTransparent(true);
     titlebarView.setBackgroundColor(titleBgColor);
     titlebarContainerView.superview().setBackgroundColor(titleBgColor);

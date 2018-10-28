@@ -5,13 +5,10 @@ export default function() {
   const options = {
     identifier: 'unique.id',
     width: 320,
-    height: 512,
-    url: CONSTS.baseURL + 'gm_styles'
+    height: 524,
+    url: CONSTS.baseURL + 'm2'
   }
 
   var panel = new MDPanel(options);
-
-
-  // panel.listen('drag-end', Icons.convertSvgToSymbol);
 
 }
