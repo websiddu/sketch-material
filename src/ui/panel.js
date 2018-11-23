@@ -1,11 +1,12 @@
-import MochaJSDelegate from "./mocha-js-delegate";
-import firstMouseAcceptor from "./first-mouse";
+import MochaJSDelegate from "../utils/global/mocha-js-delegate";
+import firstMouseAcceptor from "../utils/global/first-mouse";
 import Icons from "../components/icons";
 import Colors from "../components/color";
 import Type from "../components/type";
 import Elevation from "../components/elevations";
 import FakeData from "../components/data";
 import Metadata from "../components/metadata";
+import Components from '../components/components';
 
 export class MDPanel {
   constructor(options) {
@@ -33,9 +34,9 @@ export class MDPanel {
       webView = WebView.alloc().initWithFrame(webViewRect),
       closeButton = Panel.standardWindowButton(NSWindowCloseButton),
       titlebarView = contentView
-        .superview()
-        .titlebarViewController()
-        .view(),
+      .superview()
+      .titlebarViewController()
+      .view(),
       titlebarContainerView = titlebarView.superview();
 
     // threadDictionary[this.options.identifier] = this;
@@ -67,22 +68,28 @@ export class MDPanel {
     this.windowObject = windowObject;
 
     const delegate = new MochaJSDelegate({
-      "webView:didChangeLocationWithinPageForFrame:": function(
+      "webView:didChangeLocationWithinPageForFrame:": function (
         webView,
         webFrame
       ) {
         const request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
+
         if (request) {
-          const sketchData = JSON.parse(
-            decodeURI(windowObject.valueForKey("_sketch_data"))
-          );
 
           if (request == "onWindowDidBlur") {
             firstMouseAcceptor(webView, contentView);
           }
 
+          const sketchData = JSON.parse(
+            decodeURI(windowObject.valueForKey("_sketch_data"))
+          );
+
           if (request == "drag-end") {
             Icons.convertSvgToSymbol(sketchData);
+          }
+
+          if (request == 'componentDragFinish') {
+            Components().convertImgToLayer(sketchData);
           }
 
           if (request == "applyColor") {
@@ -124,7 +131,7 @@ export class MDPanel {
 
     webView.setFrameLoadDelegate_(delegate.getClassInstance());
 
-    closeButton.setCOSJSTargetFunction(function(sender) {
+    closeButton.setCOSJSTargetFunction(function (sender) {
       self.wantsStop = true;
       Panel.close();
 

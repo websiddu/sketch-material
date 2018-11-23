@@ -1,11 +1,13 @@
-import { MDPanel } from "./panel/index";
-import CONSTS from "./common/constants";
+import {
+  MDPanel
+} from "../ui/panel";
+import CONSTS from "../common/constants";
 
-export default function(context) {
+export default function (context) {
   const commandId = context.command.identifier();
 
-  var threadDictionary = NSThread.mainThread().threadDictionary();
-  var browserWindow = threadDictionary[CONSTS.stylesPanelId];
+  let threadDictionary = NSThread.mainThread().threadDictionary();
+  let browserWindow = threadDictionary[CONSTS.stylesPanelId];
 
   if (browserWindow) {
     browserWindow.windowObject.evaluateWebScript(
@@ -23,4 +25,5 @@ export default function(context) {
 
   var panel = new MDPanel(options);
   threadDictionary[CONSTS.stylesPanelId] = panel;
+
 }

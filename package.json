@@ -26,6 +26,8 @@
     "resources/**/*.js"
   ],
   "dependencies": {
+    "@skpm/fs": "^0.2.2",
+    "@skpm/path": "^0.1.1",
     "sketch-module-web-view": "^2.0.0"
   },
   "author": "Siddhartha <gsid@google.com>"

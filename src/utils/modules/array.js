@@ -33,5 +33,55 @@ export default {
     } else {
       return false;
     }
+  },
+
+  forEach(collection, iterator) {
+    for (var i = 0; i < collection.count(); i++) {
+      const item = collection.objectAtIndex(i);
+      const returnValue = iterator(item, i, collection);
+      if (returnValue === false) {
+        break;
+      }
+    }
+  },
+
+  map(collection, transform) {
+    const result = [];
+    this.forEach(collection, function (item, i, collection) {
+      result.push(transform(item, i, collection));
+    });
+    return result;
+  },
+
+  mapObject(collection, transform) {
+    const results = {};
+    this.forEach(collection, function (item, i, collection) {
+      const result = transform(item, i, collection);
+      const key = result[0];
+      const value = result[1];
+      results[key] = value;
+    });
+    return results;
+  },
+
+  find(collection, predicate) {
+    var result;
+    this.forEach(collection, function (item, i, collection) {
+      if (predicate(item, i, collection)) {
+        result = item;
+        return false;
+      }
+    });
+    return result;
+  },
+
+  filter(collection, predicate) {
+    const result = [];
+    this.forEach(collection, function (item, i, collection) {
+      if (predicate(item, i, collection)) {
+        result.push(item);
+      }
+    });
+    return result;
   }
 };

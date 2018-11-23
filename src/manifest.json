@@ -7,38 +7,67 @@
   "author": "Siddhartha Gudipati",
   "compatibleVersion": "52",
   "identifier": "com.google.material2.active",
-  "commands": [
+  "commands": [{
+      "script": "./handlers/on-selection-change.js",
+      "handlers": {
+        "actions": {
+          "SymbolOverrideChanged.finish": "onSelectionChanged"
+        }
+      }
+    },
+    {
+      "name": "Export",
+      "identifier": "export",
+      "script": "./commands/export.js"
+    },
+    {
+      "name": "Toggle strip...",
+      "identifier": "strip",
+      "script": "./panels/strip.js"
+    },
+    {
+      "name": "Metadata...",
+      "identifier": "metadata",
+      "script": "./panels/settings.js"
+    },
     {
       "name": "Icons...",
       "identifier": "icons",
-      "script": "./init.js",
+      "script": "./panels/styles.js",
       "shortcut": "cmd + shift + i"
     },
     {
       "name": "Color...",
       "identifier": "color",
-      "script": "./init.js",
+      "script": "./panels/styles.js",
       "shortcut": "cmd + shift + c"
     },
     {
       "name": "Typography...",
       "identifier": "type",
-      "script": "./init.js"
+      "script": "./panels/styles.js"
     },
     {
       "name": "Elevations...",
       "identifier": "elevation",
-      "script": "./init.js"
+      "script": "./panels/styles.js"
     },
     {
       "name": "Fake data...",
       "identifier": "data",
-      "script": "./init.js"
+      "script": "./panels/styles.js"
+    },
+    {
+      "name": "Components...",
+      "identifier": "components",
+      "script": "./panels/styles.js"
     }
   ],
   "menu": {
     "title": "✨ Sketch Material",
-    "items": ["icons", "color", "type", "elevation", "data"]
+    "items": ["icons", "color", "type", "elevation", "data", "components",
+      "-", "metadata", "-", "strip", "export"
+    ]
   },
   "appcast": "https://raw.githubusercontent.com/websiddu/sketch-material/master/.appcast.xml"
 }

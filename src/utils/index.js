@@ -6,6 +6,7 @@ import DomUtils from './modules/dom'
 import StyleUtils from './modules/styles'
 import SymbolUtils from './modules/symbol'
 import UiUtils from './modules/ui'
+import PathUtils from './modules/path'
 
 const Utils = Object.assign({},
   ArrayUtils,
@@ -15,7 +16,8 @@ const Utils = Object.assign({},
   DomUtils,
   StyleUtils,
   SymbolUtils,
-  UiUtils
+  UiUtils,
+  PathUtils
 )
 
 export default Utils;

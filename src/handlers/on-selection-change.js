@@ -1,42 +1,49 @@
-import Utils from "../utils";
-import { MDPanel } from "../panel/index";
 import CONSTS from "../common/constants";
 
 var Settings = require("sketch/settings");
 
+import Swizzle from '../utils/global/swizzle';
+
 export function onSelectionChanged(context) {
-  var threadDictionary = NSThread.mainThread().threadDictionary();
-  var browserWindow = threadDictionary[CONSTS.layerSettingsPanelId];
 
-  if (!browserWindow) {
-    return;
-  }
+  log(context.actionContext);
 
-  const action = context.actionContext;
-  const selection = action.newSelection;
 
-  var selecitonLoop = selection.objectEnumerator(),
-    sel;
 
-  while ((sel = selecitonLoop.nextObject())) {
-    var settingKeys = Settings.layerSettingForKey(sel, "keys");
 
-    var settingsJSON = [];
-    if (settingKeys) {
-      var keys = settingKeys.slice(0, -1).split("|");
 
-      for (var i = 0; i < keys.length; i++) {
-        settingsJSON.push({
-          key: keys[i],
-          value: Settings.layerSettingForKey(sel, keys[i])
-        });
-      }
+  // var threadDictionary = NSThread.mainThread().threadDictionary();
+  // var browserWindow = threadDictionary[CONSTS.layerSettingsPanelId];
 
-      log(settingsJSON);
-    }
+  // if (!browserWindow) {
+  //   return;
+  // }
 
-    browserWindow.windowObject.evaluateWebScript(
-      `window.vm.$store.state.layerMetadata=${JSON.stringify(settingsJSON)};`
-    );
-  }
+  // const action = context.actionContext;
+  // const selection = action.newSelection;
+
+  // var selecitonLoop = selection.objectEnumerator(),
+  //   sel;
+
+
+  // // Swizzle.appendMethod_with('MSOverrideViewController_applyOverrideToSelectedLayers', function (context, args) {
+  // //   log("Should work!!!!!");
+  // // })
+
+  // while ((sel = selecitonLoop.nextObject())) {
+  //   var settingsJSON = sel.userInfo()[CONSTS.pluginId] || [];
+
+  //   const meta = Object.keys(settingsJSON).map((k) => {
+  //     return {
+  //       key: k,
+  //       value: settingsJSON[k].replace(/"/g, '')
+  //     };
+  //   });
+
+  //   log(meta);
+
+  //   browserWindow.windowObject.evaluateWebScript(
+  //     `window.vm.$store.state.layerMetadata=${JSON.stringify(meta)};`
+  //   );
+  // }
 }

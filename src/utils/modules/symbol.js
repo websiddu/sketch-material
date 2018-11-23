@@ -14,7 +14,16 @@ export default {
     }
     return false;
   },
-  makeColorSymbol: function(color, colorHex, colorAlpha, name) {
+  findSymbolById(symbolId) {
+    return DocUtils.doc().documentData().symbolWithID(symbolId);
+  },
+  addSymbolToDoc(symbol) {
+    let symbolDoc = DocUtils.doc()
+      .documentData()
+      .symbolsPageOrCreateIfNecessary();
+    symbolDoc.addLayer(symbol);
+  },
+  makeColorSymbol: function (color, colorHex, colorAlpha, name) {
     if (this.findSymbolByName(name)) {
       return;
     }

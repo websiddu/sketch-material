@@ -14,15 +14,12 @@ export default {
         sel;
 
       while ((sel = selecitonLoop.nextObject())) {
-        var keys = "";
         for (let i = 0; i < data.length; i++) {
-          Settings.setLayerSettingForKey(sel, data[i].key, data[i].value);
-          keys = keys + data[i].key + "|";
+          Settings.setLayerSettingForKey(sel, data[i].key, "" + data[i].value);
         }
-        Settings.setLayerSettingForKey(sel, "keys", keys);
       }
 
-      // Utils.doc().reloadInspector();
+      Utils.doc().reloadInspector();
     }
   }
 };

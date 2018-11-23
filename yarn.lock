@@ -706,6 +706,11 @@
     loader-utils "^1.0.2"
     schema-utils "^0.4.5"
 
+"@skpm/fs@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@skpm/fs/-/fs-0.2.2.tgz#29998d5f21a46f5ae01820d5a91dc01e785e7c0e"
+  integrity sha512-VObupsYDlJ4uJLHLysfLnUa5NaJ4ODlUYKkxGYN6AEukezE15pK7ZtotxxrQrdQgwpWRuXs32sNVaN+mskXAgA==
+
 "@skpm/internal-utils@^0.1.10":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@skpm/internal-utils/-/internal-utils-0.1.11.tgz#d3c9de9c075961f60fd18f963bb85a199c55ef3f"
@@ -724,6 +729,11 @@
     cocoascript-class "^0.1.2"
     loader-utils "^1.0.2"
     schema-utils "^0.4.5"
+
+"@skpm/path@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@skpm/path/-/path-0.1.1.tgz#c9f2fe51a9e485a0e7c857e255bea095d41c6c7a"
+  integrity sha512-sfDEMqgBiNCsIyOM9nPnNRXj01rL7YlZDSinSpq7x79eAbNJcy+jzuZL/KOKKbg+mV7edI68PADuBuqwJmcxVA==
 
 "@skpm/timers@^0.1.0":
   version "0.1.0"

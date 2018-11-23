@@ -16,6 +16,7 @@ var createCocoaObject = function (methods, superclass) {
 }
 
 module.exports = function (webView, contentView) {
+
   var button = createCocoaObject({
       'mouseDown:': function (evt) {
         this.removeFromSuperview()
@@ -38,6 +39,16 @@ module.exports = function (webView, contentView) {
 
   contentView.addConstraints(
     NSLayoutConstraint.constraintsWithVisualFormat_options_metrics_views(
+      'V:[button(==webView)]',
+      NSLayoutFormatDirectionLeadingToTrailing,
+      null,
+      views
+    )
+  )
+
+
+  contentView.addConstraints(
+    NSLayoutConstraint.constraintsWithVisualFormat_options_metrics_views(
       'H:[button(==webView)]',
       NSLayoutFormatDirectionLeadingToTrailing,
       null,
@@ -46,16 +57,7 @@ module.exports = function (webView, contentView) {
   )
 
   contentView.addConstraints(
-    NSLayoutConstraint.constraintsWithVisualFormat_options_metrics_views(
-      'V:[button(==webView)]',
-      NSLayoutFormatDirectionLeadingToTrailing,
-      null,
-      views
-    )
-  )
-
-  contentView.addConstraints(
-    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant(
+    [NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant(
       button,
       NSLayoutAttributeTop,
       NSLayoutRelationEqual,
@@ -63,6 +65,6 @@ module.exports = function (webView, contentView) {
       NSLayoutAttributeTop,
       1,
       0
-    )
+    )]
   )
 }

@@ -1,3 +1,5 @@
+import $ from './array';
+
 export default {
   doc() {
     const document = NSDocumentController.sharedDocumentController().currentDocument();
@@ -14,5 +16,14 @@ export default {
     return this.doc()
       .selectedLayers()
       .layers();
+  },
+  allLayers() {
+    return this.current().children();
+  },
+  getDocumentSymbols() {
+    const symbols = this.doc().documentData().allSymbols();
+    return $.mapObject(symbols, function (symbol) {
+      return [symbol.symbolID(), symbol];
+    });
   }
 };

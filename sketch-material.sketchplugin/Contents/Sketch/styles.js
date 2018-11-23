@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/panels/settings.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/panels/styles.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1150,10 +1150,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/panels/settings.js":
-/*!********************************!*\
-  !*** ./src/panels/settings.js ***!
-  \********************************/
+/***/ "./src/panels/styles.js":
+/*!******************************!*\
+  !*** ./src/panels/styles.js ***!
+  \******************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1163,20 +1163,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
 
 
-/* harmony default export */ __webpack_exports__["default"] = (function () {
+/* harmony default export */ __webpack_exports__["default"] = (function (context) {
+  var commandId = context.command.identifier();
   var threadDictionary = NSThread.mainThread().threadDictionary();
-  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId];
+  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId];
 
-  if (!browserWindow) {
-    var options = {
-      identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId,
-      width: 300,
-      height: 300,
-      url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "metadata"
-    };
-    var panel = new _ui_panel__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
-    threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId] = panel;
+  if (browserWindow) {
+    browserWindow.windowObject.evaluateWebScript("window.vm.$router.push({path: '/m2/".concat(commandId, "'})"));
+    return;
   }
+
+  var options = {
+    identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId,
+    width: 320,
+    height: 524,
+    url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "m2/" + commandId
+  };
+  var panel = new _ui_panel__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
+  threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].stylesPanelId] = panel;
 });
 
 /***/ }),
@@ -2225,4 +2229,4 @@ module.exports = require("util");
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=settings.js.map
+//# sourceMappingURL=styles.js.map

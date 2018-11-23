@@ -86,10 +86,304 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/panels/settings.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/commands/export.js");
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./node_modules/@skpm/fs/index.js":
+/*!****************************************!*\
+  !*** ./node_modules/@skpm/fs/index.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// TODO: async. Should probably be done with NSFileHandle and some notifications
+// TODO: file descriptor. Needs to be done with NSFileHandle
+var Buffer = __webpack_require__(/*! buffer */ "buffer").Buffer
+
+function encodingFromOptions(options, defaultValue) {
+  return options && options.encoding
+    ? String(options.encoding)
+    : (
+      options
+        ? String(options)
+        : defaultValue
+    )
+}
+
+module.exports.constants = {
+  F_OK: 0,
+  R_OK: 4,
+  W_OK: 2,
+  X_OK: 1
+}
+
+module.exports.accessSync = function(path, mode) {
+  mode = mode | 0
+  var fileManager = NSFileManager.defaultManager()
+
+  switch (mode) {
+    case 0:
+      canAccess = module.exports.existsSync(path)
+      break
+    case 1:
+      canAccess = Boolean(Number(fileManager.isExecutableFileAtPath(path)))
+      break
+    case 2:
+      canAccess = Boolean(Number(fileManager.isWritableFileAtPath(path)))
+      break
+    case 3:
+      canAccess = Boolean(Number(fileManager.isExecutableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path)))
+      break
+    case 4:
+      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path)))
+      break
+    case 5:
+      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isExecutableFileAtPath(path)))
+      break
+    case 6:
+      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path)))
+      break
+    case 7:
+      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path))) && Boolean(Number(fileManager.isExecutableFileAtPath(path)))
+      break
+  }
+
+  if (!canAccess) {
+    throw new Error('Can\'t access ' + String(path))
+  }
+}
+
+module.exports.appendFileSync = function(file, data, options) {
+  if (!module.exports.existsSync(file)) {
+    return module.exports.writeFileSync(file, data, options)
+  }
+
+  var handle = NSFileHandle.fileHandleForWritingAtPath(file)
+  handle.seekToEndOfFile()
+
+  var encoding = encodingFromOptions(options, 'utf8')
+
+  var nsdata = Buffer.from(data, encoding === 'NSData' || encoding === 'buffer' ? undefined : encoding).toNSData()
+
+  handle.writeData(nsdata)
+}
+
+module.exports.chmodSync = function(path, mode) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.setAttributes_ofItemAtPath_error({
+    NSFilePosixPermissions: mode
+  }, path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.copyFileSync = function(path, dest, flags) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.copyItemAtPath_toPath_error(path, dest, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.existsSync = function(path) {
+  var fileManager = NSFileManager.defaultManager()
+  return Boolean(Number(fileManager.fileExistsAtPath(path)))
+}
+
+module.exports.linkSync = function(existingPath, newPath) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.linkItemAtPath_toPath_error(existingPath, newPath, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.mkdirSync = function(path, mode) {
+  mode = mode || 0o777
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.createDirectoryAtPath_withIntermediateDirectories_attributes_error(path, false, {
+    NSFilePosixPermissions: mode
+  }, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.mkdtempSync = function(path) {
+  function makeid() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for (var i = 0; i < 6; i++)
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+  }
+  var tempPath = path + makeid()
+  module.exports.mkdirSync(tempPath)
+  return tempPath
+}
+
+module.exports.readdirSync = function(path) {
+  var fileManager = NSFileManager.defaultManager()
+  var paths = fileManager.subpathsAtPath(path)
+  var arr = []
+  for (var i = 0; i < paths.length; i++) {
+    arr.push(String(paths[i]))
+  }
+  return arr
+}
+
+module.exports.readFileSync = function(path, options) {
+  var encoding = encodingFromOptions(options, 'buffer')
+  var fileManager = NSFileManager.defaultManager()
+  var data = fileManager.contentsAtPath(path)
+  var buffer = Buffer.from(data)
+
+  if (encoding === 'buffer') {
+    return buffer
+  } else if (encoding === 'NSData') {
+    return buffer.toNSData()
+  } else {
+    return buffer.toString(encoding)
+  }
+}
+
+module.exports.readlinkSync = function(path) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  var result = fileManager.destinationOfSymbolicLinkAtPath_error(path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+
+  return String(result)
+}
+
+module.exports.realpathSync = function(path) {
+  return String(NSString.stringByResolvingSymlinksInPath(path))
+}
+
+module.exports.renameSync = function(oldPath, newPath) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.moveItemAtPath_toPath_error(oldPath, newPath, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.rmdirSync = function(path) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  fileManager.removeItemAtPath_error(path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.statSync = function(path) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  var result = fileManager.attributesOfItemAtPath_error(path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+
+  return {
+    dev: String(result.NSFileDeviceIdentifier),
+    // ino: 48064969, The file system specific "Inode" number for the file.
+    mode: result.NSFileType | result.NSFilePosixPermissions,
+    nlink: Number(result.NSFileReferenceCount),
+    uid: String(result.NSFileOwnerAccountID),
+    gid: String(result.NSFileGroupOwnerAccountID),
+    // rdev: 0, A numeric device identifier if the file is considered "special".
+    size: Number(result.NSFileSize),
+    // blksize: 4096, The file system block size for i/o operations.
+    // blocks: 8, The number of blocks allocated for this file.
+    atimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
+    mtimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
+    ctimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
+    birthtimeMs: Number(result.NSFileCreationDate.timeIntervalSince1970()) * 1000,
+    atime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5), // the 0.5 comes from the node source. Not sure why it's added but in doubt...
+    mtime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5),
+    ctime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5),
+    birthtime: new Date(Number(result.NSFileCreationDate.timeIntervalSince1970()) * 1000 + 0.5),
+    isBlockDevice: function() { return result.NSFileType === NSFileTypeBlockSpecial },
+    isCharacterDevice: function() { return result.NSFileType === NSFileTypeCharacterSpecial },
+    isDirectory: function() { return result.NSFileType === NSFileTypeDirectory },
+    isFIFO: function() { return false },
+    isFile: function() { return result.NSFileType === NSFileTypeRegular },
+    isSocket: function() { return result.NSFileType === NSFileTypeSocket },
+    isSymbolicLink: function() { return result.NSFileType === NSFileTypeSymbolicLink },
+  }
+}
+
+module.exports.symlinkSync = function(target, path) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  var result = fileManager.createSymbolicLinkAtPath_withDestinationPath_error(path, target, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.truncateSync = function(path, len) {
+  var hFile = NSFileHandle.fileHandleForUpdatingAtPath(sFilePath)
+  hFile.truncateFileAtOffset(len || 0)
+  hFile.closeFile()
+}
+
+module.exports.unlinkSync = function(path) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  var result = fileManager.removeItemAtPath_error(path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.utimesSync = function(path, aTime, mTime) {
+  var err = MOPointer.alloc().init()
+  var fileManager = NSFileManager.defaultManager()
+  var result = fileManager.setAttributes_ofItemAtPath_error({
+    NSFileModificationDate: aTime
+  }, path, err)
+
+  if (err.value() !== null) {
+    throw new Error(err.value())
+  }
+}
+
+module.exports.writeFileSync = function(path, data, options) {
+  var encoding = encodingFromOptions(options, 'utf8')
+
+  var nsdata = Buffer.from(
+    data, encoding === 'NSData' || encoding === 'buffer' ? undefined : encoding
+  ).toNSData()
+
+  nsdata.writeToFile_atomically(path, true)
+}
+
+
+/***/ }),
 
 /***/ "./node_modules/@skpm/path/index.js":
 /*!******************************************!*\
@@ -655,6 +949,113 @@ module.exports.cwd = function cwd() {
 
 /***/ }),
 
+/***/ "./src/commands/export.js":
+/*!********************************!*\
+  !*** ./src/commands/export.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _skpm_fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @skpm/fs */ "./node_modules/@skpm/fs/index.js");
+/* harmony import */ var _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_skpm_fs__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _skpm_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @skpm/path */ "./node_modules/@skpm/path/index.js");
+/* harmony import */ var _skpm_path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_skpm_path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+/* harmony import */ var _utils_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils/index */ "./src/utils/index.js");
+/* harmony import */ var _utils_global_archive__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils/global/archive */ "./src/utils/global/archive.js");
+
+
+
+
+ // import FrameWork from "../utils/global/load-framework";
+
+var library = [];
+
+var updateIndex = function updateIndex() {
+  var cachePath = _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].getPluginCachePath();
+  var indexCachePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(cachePath, 'index.json');
+  _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(indexCachePath, JSON.stringify(Object.assign(library, {
+    archiveVersion: Number(MSArchiveHeader.metadataForNewHeader()['version'])
+  })), {
+    encoding: 'utf8'
+  });
+};
+
+var captureLayerImage = function captureLayerImage(layer, destPath) {
+  var air = layer.absoluteInfluenceRect();
+  var rect = NSMakeRect(air.origin.x, air.origin.y, air.size.width, air.size.height);
+  var exportRequest = MSExportRequest.exportRequestsFromLayerAncestry_inRect_(MSImmutableLayerAncestry.ancestryWithMSLayer_(layer), rect // we pass this to avoid trimming
+  ).firstObject();
+  exportRequest.format = 'png';
+  exportRequest.scale = 2;
+
+  if (!(layer instanceof MSArtboardGroup || layer instanceof MSSymbolMaster)) {
+    exportRequest.includeArtboardBackground = false;
+  } // exportRequest.shouldTrim = false;
+
+
+  _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].doc().saveArtboardOrSlice_toFile_(exportRequest, destPath);
+};
+
+var exportLayer = function exportLayer(layer, pageName) {
+  var options = {
+    includeDependencies: true,
+    document: _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].doc()
+  };
+  var data = _utils_global_archive__WEBPACK_IMPORTED_MODULE_4__["default"].archiveDataFromSketchObject(layer, options);
+  var cachePath = _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].getPluginCachePath();
+  var layerId = String(layer.objectID());
+  var folder = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(cachePath, pageName);
+  _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].mkdirpSync(folder);
+  var filePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(folder, layerId + '.json');
+  var imagePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(folder, layerId + '.png');
+  var layerObj = {
+    type: 'layer',
+    id: layerId,
+    name: layer.name(),
+    component: pageName,
+    data: filePath,
+    imagePath: imagePath,
+    width: Number(layer.absoluteInfluenceRect().size.width),
+    height: Number(layer.absoluteInfluenceRect().size.height)
+  };
+  captureLayerImage(layer, imagePath);
+  _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(filePath, data, {
+    encoding: 'NSData'
+  });
+  library.push(layerObj);
+};
+
+var parsePageLayers = function parsePageLayers(page) {
+  var layers = page.layers();
+
+  if (layers.count() > 0) {
+    var layersLoop = layers.objectEnumerator();
+    var layer = null;
+
+    while (layer = layersLoop.nextObject()) {
+      exportLayer(layer, "" + page.name());
+    }
+  }
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (function () {
+  var pages = _utils_index__WEBPACK_IMPORTED_MODULE_3__["default"].doc().documentData().pages();
+  var pagesLoop = pages.objectEnumerator();
+  var page = null;
+
+  while (page = pagesLoop.nextObject()) {
+    if (page.name().isEqualToString('Symbols')) continue;
+    parsePageLayers(page);
+  }
+
+  updateIndex();
+});
+
+/***/ }),
+
 /***/ "./src/common/constants.js":
 /*!*********************************!*\
   !*** ./src/common/constants.js ***!
@@ -671,682 +1072,6 @@ __webpack_require__.r(__webpack_exports__);
   layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings',
   stylesPanelId: 'com.gsid.sketch.material.styles.13121'
 });
-
-/***/ }),
-
-/***/ "./src/components/color.js":
-/*!*********************************!*\
-  !*** ./src/components/color.js ***!
-  \*********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-/* harmony default export */ __webpack_exports__["default"] = (function () {
-  var _setBorderColor = function _setBorderColor(layer, color) {
-    var layerClass = layer.class();
-
-    if (layerClass == "MSRectangleShape" || layerClass == "MSOvalShape" || layerClass == "MSTriangleShape" || layerClass == "MSStarShape" || layerClass == "MSPolygonShape") {
-      var borders = layer.style().enabledBorders();
-
-      if (borders.count() > 0 && borders.lastObject().fillType() == 0) {
-        borders.lastObject().setColor(color);
-      } else {
-        var border = layer.style().addStylePartOfType(1);
-        border.setFillType(0);
-        border.setColor(color);
-        border.setPosition(2);
-        border.setThickness(1);
-      }
-    }
-  };
-
-  var _fillIcon = function _fillIcon(symbolInstance, color, rawColor) {
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(color, rawColor.color, 1, "c/" + rawColor.name);
-    var selectedSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName("c/" + rawColor.name);
-    symbolInstance.overridePoints().forEach(function (overridePoint) {
-      if (overridePoint.layerName() + "" == "🎨 Color") {
-        symbolInstance.setValue_forOverridePoint_(selectedSymbol.symbolID(), overridePoint);
-      }
-    });
-    symbolInstance.isSelected = true;
-    symbolInstance.select_byExtendingSelection_showSelection(true, true, true);
-  };
-
-  var _setFillColor = function _setFillColor(layer, color, rawColor) {
-    var layerClass = layer.class();
-
-    if (layerClass == "MSSymbolInstance") {
-      _fillIcon(layer, color, rawColor);
-    }
-
-    if (layerClass == "MSRectangleShape" || layerClass == "MSOvalShape" || layerClass == "MSTriangleShape" || layerClass == "MSStarShape" || layerClass == "MSPolygonShape") {
-      var fills = layer.style().enabledFills();
-
-      if (fills.count() > 0 && fills.lastObject().fillType() == 0) {
-        fills.lastObject().setColor(color);
-      } else {
-        var fill = layer.style().addStylePartOfType(0);
-        fill.setFillType(0);
-        fill.setColor(color);
-      }
-    }
-
-    if (layer.class() == "MSTextLayer") {
-      layer.setTextColor(color);
-    }
-  };
-
-  var _applyColor = function _applyColor(rawColor) {
-    var doc = NSDocumentController.sharedDocumentController().currentDocument();
-    var selection = doc.selectedLayers().layers();
-
-    if (selection.count() <= 0) {
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer to apply color");
-    } else {
-      var selecitonLoop = selection.objectEnumerator();
-      var sel;
-
-      while (sel = selecitonLoop.nextObject()) {
-        var nsColor;
-
-        if (rawColor.color.startsWith("#") > 0) {
-          nsColor = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].hexToMSColor(rawColor.color);
-        }
-
-        if (rawColor.color.startsWith("rgba") > 0) {
-          nsColor = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].rgbaToMSColor(rawColor.color);
-        }
-
-        if (!nsColor) {
-          _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Can't find the color!");
-          return;
-        }
-
-        if (rawColor.type == "border") {
-          _setBorderColor(sel, nsColor);
-        } else {
-          _setFillColor(sel, nsColor, rawColor);
-        }
-      }
-    }
-  };
-
-  var _addGlobalColors = function _addGlobalColors(colors) {
-    var MSColors = [];
-
-    for (var i = 0; i < colors.length; i++) {
-      if (typeof colors[i] == "string") {
-        MSColors.push(_utils__WEBPACK_IMPORTED_MODULE_0__["default"].hexToMSColor(colors[i]));
-      } else {
-        MSColors.push(MSColor.colorWithRed_green_blue_alpha(colors[i].red, colors[i].green, colors[i].blue, colors[i].alpha));
-      }
-    }
-
-    var app = NSApp.delegate();
-    var assets = app.globalAssets();
-    assets.setColors(MSColors);
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().inspectorController().closeAnyColorPopover();
-    app.refreshCurrentDocument();
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("✅ Colors added successfuly, Open color picker to see changes.");
-  };
-
-  var _addGlobalSymbols = function _addGlobalSymbols(colorGroups) {
-    for (var group in colorGroups) {
-      for (var clr in colorGroups[group]) {
-        var color = colorGroups[group][clr];
-        _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(_utils__WEBPACK_IMPORTED_MODULE_0__["default"].hexToMSColor(color.color), color.color, 1, "c/" + color.name);
-      }
-    }
-
-    var app = NSApp.delegate();
-    app.refreshCurrentDocument();
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("✅ Color symbols added to your symbols page");
-  };
-
-  var _pickColor = function _pickColor(webView, clr) {
-    var btn = BCMagnifierButton.alloc().initWithFrame(NSZeroRect);
-    coscript.pushAsCurrentCOScript();
-    btn.setCOSJSTargetFunction(function (sender) {
-      var pickColor = sender.color();
-      var color = MSColor.colorWithRed_green_blue_alpha(pickColor.red(), pickColor.green(), pickColor.blue(), 1);
-      var hexValue = "#" + color.immutableModelObject().hexValue();
-      webView.windowScriptObject().evaluateWebScript("window.vm.$store.state." + clr + '= "' + hexValue + '";');
-    });
-    btn.performClick(_utils__WEBPACK_IMPORTED_MODULE_0__["default"].context);
-  };
-
-  return {
-    applyColor: _applyColor,
-    addGlobalColors: _addGlobalColors,
-    addGlobalSymbols: _addGlobalSymbols,
-    pickColor: _pickColor
-  };
-});
-
-/***/ }),
-
-/***/ "./src/components/components.js":
-/*!**************************************!*\
-  !*** ./src/components/components.js ***!
-  \**************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-/* harmony import */ var _utils_global_archive__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/global/archive */ "./src/utils/global/archive.js");
-
-
-
-/* harmony default export */ __webpack_exports__["default"] = (function () {
-  var _convertImgToLayer = function _convertImgToLayer(layerData) {
-    var url = _common_constants__WEBPACK_IMPORTED_MODULE_0__["default"].baseURL + layerData.data;
-    var componentNSUrl = NSURL.URLWithString(url);
-    var componentData = NSData.dataWithContentsOfURL(componentNSUrl);
-    var component = _utils_global_archive__WEBPACK_IMPORTED_MODULE_2__["default"].sketchObjectFromArchiveData(componentData);
-    var selectedLayers = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].doc().selectedLayers();
-    var droppedElement = selectedLayers.firstLayer();
-    var droppedEleRect = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].getRect(droppedElement);
-    _utils__WEBPACK_IMPORTED_MODULE_1__["default"].forEach(component.layers, function (e) {
-      var layer = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].mutableSketchObject(e);
-      layer.setObjectID(MSModelObjectCommon.generateObjectID());
-      var newLayerRect = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].getRect(layer);
-      newLayerRect.setX(droppedEleRect.x);
-      newLayerRect.setY(droppedEleRect.y);
-      _utils__WEBPACK_IMPORTED_MODULE_1__["default"].current().addLayers([layer]);
-      _utils__WEBPACK_IMPORTED_MODULE_1__["default"].current().removeLayer(droppedElement);
-    });
-    var symbolKeys = Object.keys(component.symbols);
-
-    for (var i = 0; i < symbolKeys.length; i++) {
-      var symbol = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].mutableSketchObject(component.symbols[symbolKeys[i]]);
-      symbol.setObjectID(symbolKeys[i]);
-      var existingSymbol = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].findSymbolById(symbol.objectID());
-
-      if (!existingSymbol) {
-        _utils__WEBPACK_IMPORTED_MODULE_1__["default"].addSymbolToDoc(symbol);
-      }
-    }
-
-    var styleKeys = Object.keys(component.sharedStyles);
-
-    for (var i = 0; i < styleKeys.length; i++) {
-      var style = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].mutableSketchObject(component.sharedStyles[styleKeys[i]]);
-      style.setObjectID(styleKeys[i]);
-      var existingSharedStyle = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].getSharedStyleById(style.objectID());
-
-      if (!existingSharedStyle) {
-        _utils__WEBPACK_IMPORTED_MODULE_1__["default"].addSharedStyleObjectToDoc(style);
-      }
-    }
-  };
-
-  return {
-    convertImgToLayer: _convertImgToLayer
-  };
-});
-
-/***/ }),
-
-/***/ "./src/components/data.js":
-/*!********************************!*\
-  !*** ./src/components/data.js ***!
-  \********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-  shuffle: function shuffle(array) {
-    var currentIndex = array.length,
-        temporaryValue,
-        randomIndex; // While there remain elements to shuffle...
-
-    while (0 !== currentIndex) {
-      // Pick a remaining element...
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1; // And swap it with the current element.
-
-      temporaryValue = array[currentIndex];
-      array[currentIndex] = array[randomIndex];
-      array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-  },
-  applyFakeData: function applyFakeData(fakedata) {
-    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
-
-    if (selection.count() <= 0) {
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a text layer first");
-    } else {
-      var selecitonLoop = selection.objectEnumerator();
-      var shuffle = this.shuffle(fakedata.data);
-      var i = 0,
-          sel;
-
-      while (sel = selecitonLoop.nextObject()) {
-        if (_utils__WEBPACK_IMPORTED_MODULE_0__["default"].is(sel, MSTextLayer)) {
-          if (i > shuffle.length) i = 0;
-          sel.setStringValue(shuffle[i]);
-          i++;
-        }
-      }
-    }
-  }
-});
-
-/***/ }),
-
-/***/ "./src/components/elevations.js":
-/*!**************************************!*\
-  !*** ./src/components/elevations.js ***!
-  \**************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-  applyElevation: function applyElevation(elevation) {
-    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
-    var name = "Elevation/" + elevation;
-
-    if (elevation.name) {
-      name = "Elevation/" + elevation.name;
-    }
-
-    var elevationName = name;
-
-    if (selection.count() <= 0) {
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer to apply the elevation");
-      return false;
-    }
-
-    var style = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].createAndGetSharedLayerStyleFromJson(elevationName, elevation);
-
-    for (var i = 0; i < selection.count(); i++) {
-      var target = selection[i];
-      target.sharedStyle = style;
-    }
-
-    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
-  }
-});
-
-/***/ }),
-
-/***/ "./src/components/icons.js":
-/*!*********************************!*\
-  !*** ./src/components/icons.js ***!
-  \*********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-  convertSvgToSymbol: function convertSvgToSymbol(data) {
-    var name = data.name;
-    var selectedLayers = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().selectedLayers();
-    var existingSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName(name);
-    var replaceColor, selectedSymbol;
-
-    if (data.colorValue) {
-      replaceColor = MSColor.colorWithRed_green_blue_alpha(data.colorValue.r / 255, data.colorValue.g / 255, data.colorValue.b / 255, data.colorValue.a);
-      var prefix = "c/";
-      var ColorName = data.colorName || prefix + data.colorHex + "/" + data.colorAlpha;
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(replaceColor, data.colorHex, data.colorAlpha, ColorName);
-      selectedSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName(name);
-    }
-
-    if (existingSymbol) {
-      var newSymbol = existingSymbol.newSymbolInstance(),
-          newSymbolRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(newSymbol),
-          droppedElement = selectedLayers.firstLayer(),
-          droppedEleRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(droppedElement);
-      newSymbol.setConstrainProportions(true);
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().addLayers([newSymbol]);
-      newSymbolRect.setX(droppedEleRect.x);
-      newSymbolRect.setY(droppedEleRect.y);
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().removeLayer(droppedElement);
-      return;
-    }
-
-    if (data.colorValue && data.isGlif) {
-      var colorTHex = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].hexToNSColor("#80868B", 1);
-      var colorBlack = MSColor.colorWithRed_green_blue_alpha(colorTHex.r, colorTHex.g, colorTHex.b, 1);
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(colorBlack, "#80868B", 1, "c/grey/600");
-      var blackSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName("c/grey/600");
-      var blackSymbolInstance = blackSymbol.newSymbolInstance();
-      blackSymbolInstance.setName("🎨 Color");
-      var sRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(blackSymbolInstance);
-      sRect.setHeight(24);
-      sRect.setWidth(24);
-      var draggedLayer = selectedLayers.firstLayer();
-      var subLayers = draggedLayer.layers();
-
-      for (var j = 0; j < subLayers.count(); j++) {
-        var layer = subLayers[j];
-
-        if (layer.style().hasEnabledFill() == 0) {
-          layer.removeFromParent();
-        }
-      }
-
-      subLayers = draggedLayer.layers();
-
-      for (var j = 0; j < subLayers.count(); j++) {
-        var layer = subLayers[j];
-        layer.style().removeAllStyleFills();
-        layer.hasClippingMask = true;
-      }
-
-      draggedLayer.addLayers([blackSymbolInstance]);
-    }
-
-    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
-    var symbolInstanceRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(symbolInstance);
-    symbolInstanceRect.setConstrainProportions(true);
-    symbolInstance.overridePoints().forEach(function (overridePoint) {
-      if (overridePoint.layerName() + "" == "🎨 Color") {
-        symbolInstance.setValue_forOverridePoint_(selectedSymbol.symbolID(), overridePoint);
-      }
-    });
-  }
-});
-
-/***/ }),
-
-/***/ "./src/components/metadata.js":
-/*!************************************!*\
-  !*** ./src/components/metadata.js ***!
-  \************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-
-var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-  updateLayerMetadata: function updateLayerMetadata(data) {
-    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
-    log(data);
-
-    if (selection.count() <= 0) {
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer first");
-    } else {
-      var selecitonLoop = selection.objectEnumerator(),
-          sel;
-
-      while (sel = selecitonLoop.nextObject()) {
-        for (var i = 0; i < data.length; i++) {
-          Settings.setLayerSettingForKey(sel, data[i].key, "" + data[i].value);
-        }
-      }
-
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
-    }
-  }
-});
-
-/***/ }),
-
-/***/ "./src/components/type.js":
-/*!********************************!*\
-  !*** ./src/components/type.js ***!
-  \********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-  applyTypographyStyles: function applyTypographyStyles(style) {
-    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
-
-    if (selection.count() <= 0) {
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a text layer to apply style");
-    } else {
-      style.color = {
-        red: style.color_red,
-        blue: style.color_blue,
-        green: style.color_green,
-        alpha: style.color_alpha
-      };
-      var style = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].createAndGetSharedTextStyleFromJson(style.name, style),
-          selecitonLoop = selection.objectEnumerator(),
-          sel;
-
-      while (sel = selecitonLoop.nextObject()) {
-        sel.sharedStyle = style;
-      }
-
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
-    }
-  }
-});
-
-/***/ }),
-
-/***/ "./src/panels/settings.js":
-/*!********************************!*\
-  !*** ./src/panels/settings.js ***!
-  \********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _ui_panel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ui/panel */ "./src/ui/panel.js");
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
-
-
-/* harmony default export */ __webpack_exports__["default"] = (function () {
-  var threadDictionary = NSThread.mainThread().threadDictionary();
-  var browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId];
-
-  if (!browserWindow) {
-    var options = {
-      identifier: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId,
-      width: 300,
-      height: 300,
-      url: _common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].baseURL + "metadata"
-    };
-    var panel = new _ui_panel__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
-    threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId] = panel;
-  }
-});
-
-/***/ }),
-
-/***/ "./src/ui/panel.js":
-/*!*************************!*\
-  !*** ./src/ui/panel.js ***!
-  \*************************/
-/*! exports provided: MDPanel */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MDPanel", function() { return MDPanel; });
-/* harmony import */ var _utils_global_mocha_js_delegate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/global/mocha-js-delegate */ "./src/utils/global/mocha-js-delegate.js");
-/* harmony import */ var _utils_global_mocha_js_delegate__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_utils_global_mocha_js_delegate__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_global_first_mouse__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/global/first-mouse */ "./src/utils/global/first-mouse.js");
-/* harmony import */ var _utils_global_first_mouse__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_utils_global_first_mouse__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _components_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/icons */ "./src/components/icons.js");
-/* harmony import */ var _components_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/color */ "./src/components/color.js");
-/* harmony import */ var _components_type__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/type */ "./src/components/type.js");
-/* harmony import */ var _components_elevations__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/elevations */ "./src/components/elevations.js");
-/* harmony import */ var _components_data__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/data */ "./src/components/data.js");
-/* harmony import */ var _components_metadata__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/metadata */ "./src/components/metadata.js");
-/* harmony import */ var _components_components__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../components/components */ "./src/components/components.js");
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-
-
-
-
-
-
-
-
-
-var MDPanel =
-/*#__PURE__*/
-function () {
-  function MDPanel(options) {
-    _classCallCheck(this, MDPanel);
-
-    var defaultOptions = {
-      url: "https://google.com",
-      width: 320,
-      height: 512,
-      identifier: "com.google.material.gsid"
-    };
-    this.options = Object.assign({}, defaultOptions, options);
-    this.initilize(this.options);
-  }
-
-  _createClass(MDPanel, [{
-    key: "initilize",
-    value: function initilize(options) {
-      var Panel = NSPanel.alloc().init(),
-          colorWhite = NSColor.colorWithRed_green_blue_alpha(1, 1, 1, 1),
-          frame = NSMakeRect(0, 0, options.width, options.height + 24),
-          titleBgColor = colorWhite,
-          contentBgColor = colorWhite,
-          threadDictionary = NSThread.mainThread().threadDictionary(),
-          fiber = coscript.createFiber(),
-          webViewRect = NSMakeRect(0, 0, this.options.width, this.options.height),
-          contentView = Panel.contentView(),
-          webView = WebView.alloc().initWithFrame(webViewRect),
-          closeButton = Panel.standardWindowButton(NSWindowCloseButton),
-          titlebarView = contentView.superview().titlebarViewController().view(),
-          titlebarContainerView = titlebarView.superview(); // threadDictionary[this.options.identifier] = this;
-
-      Panel.setTitleVisibility(NSWindowTitleHidden);
-      Panel.setTitlebarAppearsTransparent(true);
-      Panel.standardWindowButton(NSWindowCloseButton).setHidden(false);
-      Panel.standardWindowButton(NSWindowMiniaturizeButton).setHidden(true);
-      Panel.standardWindowButton(NSWindowZoomButton).setHidden(true);
-      Panel.setFrame_display(frame, true);
-      Panel.setBackgroundColor(contentBgColor);
-      Panel.setWorksWhenModal(true);
-      Panel.center();
-      Panel.makeKeyAndOrderFront(nil);
-      Panel.becomeKeyWindow();
-      Panel.setLevel(NSFloatingWindowLevel);
-      contentView.setWantsLayer(true);
-      contentView.layer().setFrame(contentView.frame());
-      webView.setBackgroundColor(contentBgColor);
-      webView.setMainFrameURL_(options.url);
-      contentView.addSubview(webView);
-      var windowObject = webView.windowScriptObject();
-      this.webView = webView;
-      this.windowObject = windowObject;
-      var delegate = new _utils_global_mocha_js_delegate__WEBPACK_IMPORTED_MODULE_0___default.a({
-        "webView:didChangeLocationWithinPageForFrame:": function webViewDidChangeLocationWithinPageForFrame(webView, webFrame) {
-          var request = NSURL.URLWithString(webView.mainFrameURL()).fragment();
-
-          if (request) {
-            if (request == "onWindowDidBlur") {
-              _utils_global_first_mouse__WEBPACK_IMPORTED_MODULE_1___default()(webView, contentView);
-            }
-
-            var sketchData = JSON.parse(decodeURI(windowObject.valueForKey("_sketch_data")));
-
-            if (request == "drag-end") {
-              _components_icons__WEBPACK_IMPORTED_MODULE_2__["default"].convertSvgToSymbol(sketchData);
-            }
-
-            if (request == 'componentDragFinish') {
-              Object(_components_components__WEBPACK_IMPORTED_MODULE_8__["default"])().convertImgToLayer(sketchData);
-            }
-
-            if (request == "applyColor") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().applyColor(sketchData);
-            }
-
-            if (request == "addGlobalSymbols") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalSymbols(sketchData);
-            }
-
-            if (request == "addGlobalColors") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().addGlobalColors(sketchData);
-            }
-
-            if (request == "pickColor") {
-              Object(_components_color__WEBPACK_IMPORTED_MODULE_3__["default"])().pickColor(webView, sketchData);
-            }
-
-            if (request == "applyStyles") {
-              _components_type__WEBPACK_IMPORTED_MODULE_4__["default"].applyTypographyStyles(sketchData);
-            }
-
-            if (request == "applyFakeData") {
-              _components_data__WEBPACK_IMPORTED_MODULE_6__["default"].applyFakeData(sketchData);
-            }
-
-            if (request == "applyElevations") {
-              _components_elevations__WEBPACK_IMPORTED_MODULE_5__["default"].applyElevation(sketchData);
-            }
-
-            if (request == "updateLayerMetadata") {
-              _components_metadata__WEBPACK_IMPORTED_MODULE_7__["default"].updateLayerMetadata(sketchData);
-            }
-          }
-
-          windowObject.evaluateWebScript("window.location.hash = '';");
-        }
-      });
-      webView.setFrameLoadDelegate_(delegate.getClassInstance());
-      closeButton.setCOSJSTargetFunction(function (sender) {
-        self.wantsStop = true;
-        Panel.close();
-
-        if (options.identifier) {
-          threadDictionary.removeObjectForKey(options.identifier);
-          fiber.cleanup();
-        }
-      });
-      closeButton.setAction("callAction:");
-      closeButton.setFrameOrigin(NSMakePoint(8, 0));
-      titlebarContainerView.setFrame(NSMakeRect(0, options.height, options.width, 24));
-      titlebarView.setFrameSize(NSMakeSize(options.width, 24));
-      titlebarView.setTransparent(true);
-      titlebarView.setBackgroundColor(titleBgColor);
-      titlebarContainerView.superview().setBackgroundColor(titleBgColor);
-    }
-  }]);
-
-  return MDPanel;
-}();
 
 /***/ }),
 
@@ -1499,116 +1224,6 @@ var SKETCH_47_JSON_FORMAT_VERSION = 95;
     }
   }
 });
-
-/***/ }),
-
-/***/ "./src/utils/global/first-mouse.js":
-/*!*****************************************!*\
-  !*** ./src/utils/global/first-mouse.js ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var createCocoaObject = function createCocoaObject(methods, superclass) {
-  var uniqueClassName = 'MD.sketch_' + NSUUID.UUID().UUIDString();
-  var classDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, superclass || NSObject);
-  classDesc.registerClass();
-
-  for (var selectorString in methods) {
-    var selector = NSSelectorFromString(selectorString);
-    classDesc.addInstanceMethodWithSelector_function(selector, methods[selectorString]);
-  }
-
-  return NSClassFromString(uniqueClassName).new();
-};
-
-module.exports = function (webView, contentView) {
-  var button = createCocoaObject({
-    'mouseDown:': function mouseDown(evt) {
-      this.removeFromSuperview();
-      NSApplication.sharedApplication().sendEvent(evt);
-    }
-  }, NSButton);
-  button.setIdentifier('firstMouseAcceptor');
-  button.setTransparent(true);
-  button.setTranslatesAutoresizingMaskIntoConstraints(false);
-  contentView.addSubview(button);
-  var views = {
-    button: button,
-    webView: webView
-  };
-  contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat_options_metrics_views('V:[button(==webView)]', NSLayoutFormatDirectionLeadingToTrailing, null, views));
-  contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat_options_metrics_views('H:[button(==webView)]', NSLayoutFormatDirectionLeadingToTrailing, null, views));
-  contentView.addConstraints([NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant(button, NSLayoutAttributeTop, NSLayoutRelationEqual, webView, NSLayoutAttributeTop, 1, 0)]);
-};
-
-/***/ }),
-
-/***/ "./src/utils/global/mocha-js-delegate.js":
-/*!***********************************************!*\
-  !*** ./src/utils/global/mocha-js-delegate.js ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-module.exports = function (selectorHandlerDict, superclass) {
-  var uniqueClassName = "MochaJSDelegate_DynamicClass_" + NSUUID.UUID().UUIDString();
-  var delegateClassDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, superclass || NSObject);
-  delegateClassDesc.registerClass(); // Storage Handlers
-
-  var handlers = {}; // Define interface
-
-  this.setHandlerForSelector = function (selectorString, func) {
-    var handlerHasBeenSet = selectorString in handlers;
-    var selector = NSSelectorFromString(selectorString);
-    handlers[selectorString] = func;
-    /*
-      For some reason, Mocha acts weird about arguments: https://github.com/logancollins/Mocha/issues/28
-      We have to basically create a dynamic handler with a likewise dynamic number of predefined arguments.
-    */
-
-    if (!handlerHasBeenSet) {
-      var args = [];
-      var regex = /:/g;
-
-      while (regex.exec(selectorString)) {
-        args.push("arg" + args.length);
-      }
-
-      var dynamicFunction = eval("(function (" + args.join(", ") + ") { return handlers[selectorString].apply(this, arguments); })");
-      delegateClassDesc.addInstanceMethodWithSelector_function_(selector, dynamicFunction);
-    }
-  };
-
-  this.removeHandlerForSelector = function (selectorString) {
-    delete handlers[selectorString];
-  };
-
-  this.getHandlerForSelector = function (selectorString) {
-    return handlers[selectorString];
-  };
-
-  this.getAllHandlers = function () {
-    return handlers;
-  };
-
-  this.getClass = function () {
-    return NSClassFromString(uniqueClassName);
-  };
-
-  this.getClassInstance = function () {
-    return NSClassFromString(uniqueClassName).new();
-  }; // Convenience
-
-
-  if (_typeof(selectorHandlerDict) === "object") {
-    for (var selectorString in selectorHandlerDict) {
-      this.setHandlerForSelector(selectorString, selectorHandlerDict[selectorString]);
-    }
-  }
-};
 
 /***/ }),
 
@@ -2194,14 +1809,14 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "sketch/settings":
-/*!**********************************!*\
-  !*** external "sketch/settings" ***!
-  \**********************************/
+/***/ "buffer":
+/*!*************************!*\
+  !*** external "buffer" ***!
+  \*************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("sketch/settings");
+module.exports = require("buffer");
 
 /***/ }),
 
@@ -2225,4 +1840,4 @@ module.exports = require("util");
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=settings.js.map
+//# sourceMappingURL=export.js.map

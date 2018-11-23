@@ -1,12 +1,12 @@
-
-import {MDPanel} from '../panel/index';
+import {
+  MDPanel
+} from '../ui/panel';
 import CONSTS from '../common/constants';
 
-export default function() {
+export default function () {
 
   var threadDictionary = NSThread.mainThread().threadDictionary();
   var browserWindow = threadDictionary[CONSTS.layerSettingsPanelId];
-
 
   if (!browserWindow) {
     const options = {

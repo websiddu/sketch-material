@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/handlers/on-selection-change.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/panels/strip.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -110,107 +110,67 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/handlers/on-selection-change.js":
-/*!*********************************************!*\
-  !*** ./src/handlers/on-selection-change.js ***!
-  \*********************************************/
-/*! exports provided: onSelectionChanged */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onSelectionChanged", function() { return onSelectionChanged; });
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
-/* harmony import */ var _utils_global_swizzle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/global/swizzle */ "./src/utils/global/swizzle.js");
-
-
-var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
-
-
-function onSelectionChanged(context) {
-  log(context.actionContext); // var threadDictionary = NSThread.mainThread().threadDictionary();
-  // var browserWindow = threadDictionary[CONSTS.layerSettingsPanelId];
-  // if (!browserWindow) {
-  //   return;
-  // }
-  // const action = context.actionContext;
-  // const selection = action.newSelection;
-  // var selecitonLoop = selection.objectEnumerator(),
-  //   sel;
-  // // Swizzle.appendMethod_with('MSOverrideViewController_applyOverrideToSelectedLayers', function (context, args) {
-  // //   log("Should work!!!!!");
-  // // })
-  // while ((sel = selecitonLoop.nextObject())) {
-  //   var settingsJSON = sel.userInfo()[CONSTS.pluginId] || [];
-  //   const meta = Object.keys(settingsJSON).map((k) => {
-  //     return {
-  //       key: k,
-  //       value: settingsJSON[k].replace(/"/g, '')
-  //     };
-  //   });
-  //   log(meta);
-  //   browserWindow.windowObject.evaluateWebScript(
-  //     `window.vm.$store.state.layerMetadata=${JSON.stringify(meta)};`
-  //   );
-  // }
-}
-
-/***/ }),
-
-/***/ "./src/utils/global/swizzle.js":
-/*!*************************************!*\
-  !*** ./src/utils/global/swizzle.js ***!
-  \*************************************/
+/***/ "./src/panels/strip.js":
+/*!*****************************!*\
+  !*** ./src/panels/strip.js ***!
+  \*****************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ({
-  appendMethod_with: function appendMethod_with(method, block) {
-    var components = method.split("_");
-    var methodName = components[1];
-    var className = components[0];
-    this.appendCode_intoMethodWithName_ofClassWithName(block, methodName, className);
-  },
-  appendCode_intoMethodWithName_ofClassWithName: function appendCode_intoMethodWithName_ofClassWithName(block, methodName, className) {
-    var klass = NSClassFromString(className);
-    log(klass);
+/* harmony import */ var _ui_strip__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ui/strip */ "./src/ui/strip.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
 
-    if (!klass) {
-      return false;
-    }
 
-    var from = NSSelectorFromString(methodName); // let original = class_getInstanceMethod(klass, from);
-    // if (!original) {
-    //   return false;
-    // }
-    // let originalImp = null;
-    // let replacement = imp_implementationWithBlock(function (_self, argp) {
-    //   // Original implementation
-    //   if (originalImp) {
-    //     originalImp(_self, _cmd, argp);
-    //   }
-    //   block(_self, argp);
-    // });
-    // originalImp = class_replaceMethod(klass, from, replacement, method_getTypeEncoding(original));
-    // if (!originalImp) {
-    //   return false;
-    // }
-    // return true;
-  }
+/* harmony default export */ __webpack_exports__["default"] = (function () {
+  var options = {}; // var strip = new MDStrip(options);
 });
 
 /***/ }),
 
-/***/ "sketch/settings":
-/*!**********************************!*\
-  !*** external "sketch/settings" ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/***/ "./src/ui/strip.js":
+/*!*************************!*\
+  !*** ./src/ui/strip.js ***!
+  \*************************/
+/*! exports provided: MDStrip */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-module.exports = require("sketch/settings");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MDStrip", function() { return MDStrip; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var MDStrip =
+/*#__PURE__*/
+function () {
+  function MDStrip(options) {
+    _classCallCheck(this, MDStrip);
+
+    this.initilize();
+  }
+
+  _createClass(MDStrip, [{
+    key: "initilize",
+    value: function initilize() {
+      var StackView = NSStackView.alloc().initWithFrame(NSMakeRect(0, 0, 40, 400));
+      var E = MSDocument.currentDocument().documentWindow().contentView().subviews().objectAtIndex(0);
+      var I = [];
+      E.subviews().forEach(function (t) {
+        I.push(t);
+      });
+      I.splice(2, 0, StackView);
+      E.subviews = I;
+      E.adjustSubviews();
+    }
+  }]);
+
+  return MDStrip;
+}();
 
 /***/ })
 
@@ -221,7 +181,6 @@ module.exports = require("sketch/settings");
     exports[key](context);
   }
 }
-that['onSelectionChanged'] = __skpm_run.bind(this, 'onSelectionChanged');
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=on-selection-change.js.map
+//# sourceMappingURL=strip.js.map

@@ -9,8 +9,7 @@ export default {
     var sharedStyles = DocUtils.doc()
       .documentData()
       .allTextStyles();
-    var style = ArrayUtils.find(
-      {
+    var style = ArrayUtils.find({
         key: "(name != NULL) && (name == %@)",
         match: name
       },
@@ -19,12 +18,16 @@ export default {
     style = !style || ClassUtils.is(style, MSSharedStyle) ? style : style[0];
     return style;
   },
-  getSharedLayerStyleByName: function(name) {
+  getSharedStyleById(id) {
+    let documentData = DocUtils.doc().documentData();
+    let style = documentData.layerStyleWithID(id) || documentData.textStyleWithID(id);
+    return style;
+  },
+  getSharedLayerStyleByName: function (name) {
     var sharedStyles = DocUtils.doc()
       .documentData()
       .allLayerStyles();
-    var style = ArrayUtils.find(
-      {
+    var style = ArrayUtils.find({
         key: "(name != NULL) && (name == %@)",
         match: name
       },
@@ -33,8 +36,19 @@ export default {
     style = !style || ClassUtils.is(style, MSSharedStyle) ? style : style[0];
     return style;
   },
-  addSharedStylesToDoc(name, style, type) {
-    var container = DocUtils.doc()
+  addSharedStyleObjectToDoc(style) {
+    let container = DocUtils.doc()
+      .documentData()
+      .layerStyles();
+
+    if (style.style().hasTextStyle()) {
+      container = DocUtils.doc().documentData().layerTextStyles();
+    }
+
+    container.addSharedObject(style);
+  },
+  addSharedStylesToDocByName(name, style, type) {
+    let container = DocUtils.doc()
       .documentData()
       .layerTextStyles();
     if (type == "layer") {
@@ -42,7 +56,7 @@ export default {
         .documentData()
         .layerStyles();
     }
-    var s = MSSharedStyle.alloc().initWithName_style(name, style);
+    const s = MSSharedStyle.alloc().initWithName_style(name, style);
     container.addSharedObject(s);
   },
   createAndGetSharedTextStyleFromJson(name, json) {
@@ -88,7 +102,7 @@ export default {
 
       style = text.style();
 
-      this.addSharedStylesToDoc(name, style, "text");
+      this.addSharedStylesToDocByName(name, style, "text");
       DomUtils.removeLayer(text);
     }
 
@@ -142,7 +156,7 @@ export default {
       if (json.shadows) this.applyShadowsToStyle(style, json.shadows);
       if (json.borders) this.applyBordersToStyle(style, json.borders);
       style.contextSettings().setOpacity(1);
-      this.addSharedStylesToDoc(name, style, "layer");
+      this.addSharedStylesToDocByName(name, style, "layer");
     }
 
     return this.getSharedLayerStyleByName(name);
