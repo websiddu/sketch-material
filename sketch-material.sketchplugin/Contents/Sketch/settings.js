@@ -1089,18 +1089,21 @@ var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   updateLayerMetadata: function updateLayerMetadata(data) {
-    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
     log(data);
+    var selection = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
 
     if (selection.count() <= 0) {
       _utils__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer first");
     } else {
       var selecitonLoop = selection.objectEnumerator(),
-          sel;
+          sel,
+          keys = Object.keys(data);
 
       while (sel = selecitonLoop.nextObject()) {
-        for (var i = 0; i < data.length; i++) {
-          Settings.setLayerSettingForKey(sel, data[i].key, "" + data[i].value);
+        _utils__WEBPACK_IMPORTED_MODULE_0__["default"].clearLayerMetaData(sel);
+
+        for (var i = 0; i < keys.length; i++) {
+          Settings.setLayerSettingForKey(sel, keys[i], data[keys[i]]);
         }
       }
 
@@ -1161,6 +1164,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ui_panel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ui/panel */ "./src/ui/panel.js");
 /* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = (function () {
@@ -1176,7 +1181,14 @@ __webpack_require__.r(__webpack_exports__);
     };
     var panel = new _ui_panel__WEBPACK_IMPORTED_MODULE_0__["MDPanel"](options);
     threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId] = panel;
+    browserWindow = threadDictionary[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].layerSettingsPanelId];
   }
+
+  var selection = _utils__WEBPACK_IMPORTED_MODULE_2__["default"].selection(); // First argument is a delay in seconds.
+
+  coscript.scheduleWithInterval_jsFunction(0.5, function () {
+    _utils__WEBPACK_IMPORTED_MODULE_2__["default"].loadSettingsToWebview(selection, browserWindow);
+  });
 });
 
 /***/ }),
@@ -1258,7 +1270,11 @@ function () {
       Panel.setFrame_display(frame, true);
       Panel.setBackgroundColor(contentBgColor);
       Panel.setWorksWhenModal(true);
-      Panel.center();
+      var mainWindowFrame = NSApp.mainWindow().frame();
+      var mainWindowWidth = Number(mainWindowFrame.size.width);
+      var mainWindowHeight = Number(mainWindowFrame.size.height);
+      var frameOrgin = NSMakePoint(mainWindowWidth - 240 - this.options.width, mainWindowHeight - 100 - this.options.height);
+      Panel.setFrameOrigin(frameOrgin);
       Panel.makeKeyAndOrderFront(nil);
       Panel.becomeKeyWindow();
       Panel.setLevel(NSFloatingWindowLevel);
@@ -1630,6 +1646,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_symbol__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/symbol */ "./src/utils/modules/symbol.js");
 /* harmony import */ var _modules_ui__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/ui */ "./src/utils/modules/ui.js");
 /* harmony import */ var _modules_path__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./modules/path */ "./src/utils/modules/path.js");
+/* harmony import */ var _modules_settings__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./modules/settings */ "./src/utils/modules/settings.js");
 
 
 
@@ -1639,7 +1656,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var Utils = Object.assign({}, _modules_array__WEBPACK_IMPORTED_MODULE_0__["default"], _modules_class__WEBPACK_IMPORTED_MODULE_1__["default"], _modules_color__WEBPACK_IMPORTED_MODULE_2__["default"], _modules_doc__WEBPACK_IMPORTED_MODULE_3__["default"], _modules_dom__WEBPACK_IMPORTED_MODULE_4__["default"], _modules_styles__WEBPACK_IMPORTED_MODULE_5__["default"], _modules_symbol__WEBPACK_IMPORTED_MODULE_6__["default"], _modules_ui__WEBPACK_IMPORTED_MODULE_7__["default"], _modules_path__WEBPACK_IMPORTED_MODULE_8__["default"]);
+
+var Utils = Object.assign({}, _modules_array__WEBPACK_IMPORTED_MODULE_0__["default"], _modules_class__WEBPACK_IMPORTED_MODULE_1__["default"], _modules_color__WEBPACK_IMPORTED_MODULE_2__["default"], _modules_doc__WEBPACK_IMPORTED_MODULE_3__["default"], _modules_dom__WEBPACK_IMPORTED_MODULE_4__["default"], _modules_styles__WEBPACK_IMPORTED_MODULE_5__["default"], _modules_symbol__WEBPACK_IMPORTED_MODULE_6__["default"], _modules_ui__WEBPACK_IMPORTED_MODULE_7__["default"], _modules_path__WEBPACK_IMPORTED_MODULE_8__["default"], _modules_settings__WEBPACK_IMPORTED_MODULE_9__["default"]);
 /* harmony default export */ __webpack_exports__["default"] = (Utils);
 
 /***/ }),
@@ -1934,8 +1952,9 @@ __webpack_require__.r(__webpack_exports__);
   getPluginCachePath: function getPluginCachePath() {
     var cachePath = String(NSFileManager.defaultManager().URLsForDirectory_inDomains_(NSCachesDirectory, NSUserDomainMask)[0].path());
     var pluginCacheKey = String(__command.pluginBundle().identifier()); // TODO: escape if needed
+    // return path.join(cachePath, pluginCacheKey);
 
-    return _skpm_path__WEBPACK_IMPORTED_MODULE_0___default.a.join(cachePath, pluginCacheKey);
+    return '/Users/gsid/work/projects/side/sketch-material/internal/gen/public/static/l/gm';
   },
   mkdirpSync: function mkdirpSync(path, mode) {
     mode = mode || 511;
@@ -1947,6 +1966,54 @@ __webpack_require__.r(__webpack_exports__);
 
     if (err.value() !== null) {
       throw new Error(err.value());
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./src/utils/modules/settings.js":
+/*!***************************************!*\
+  !*** ./src/utils/modules/settings.js ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../common/constants */ "./src/common/constants.js");
+var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  hasComponentData: function hasComponentData(ele) {
+    return Settings.layerSettingForKey(ele, 'component');
+  },
+  clearLayerMetaDataForKeys: function clearLayerMetaDataForKeys(ele, keys) {
+    keys.forEach(function (key) {
+      // Settings.setLayerSettingForKey(ele, key, undefined);
+      __command.setValue_forKey_onLayer(nil, key, ele);
+    });
+  },
+  clearLayerMetaData: function clearLayerMetaData(ele) {
+    if (!ele.userInfo()) return;
+    var settingsJSON = ele.userInfo()[_common_constants__WEBPACK_IMPORTED_MODULE_0__["default"].pluginId] || [];
+    var keys = Object.keys(settingsJSON);
+    this.clearLayerMetaDataForKeys(ele, keys);
+  },
+  loadSettingsToWebview: function loadSettingsToWebview(selection, browserWindow) {
+    var selecitonLoop = selection.objectEnumerator(),
+        sel;
+
+    while (sel = selecitonLoop.nextObject()) {
+      var settingsJSON = sel.userInfo()[_common_constants__WEBPACK_IMPORTED_MODULE_0__["default"].pluginId] || [];
+      var meta = Object.keys(settingsJSON).map(function (k) {
+        return {
+          key: k,
+          value: Settings.layerSettingForKey(sel, k)
+        };
+      });
+      browserWindow.windowObject.evaluateWebScript("window.vm.$store.state.layerMetadata=".concat(JSON.stringify(meta), ";"));
     }
   }
 });

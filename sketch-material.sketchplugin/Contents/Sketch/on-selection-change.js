@@ -91,126 +91,14 @@ var exports =
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/common/constants.js":
-/*!*********************************!*\
-  !*** ./src/common/constants.js ***!
-  \*********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ({
-  pluginId: "com.google.material2.active",
-  // baseURL: 'https://google-com-sketch-material.firebaseapp.com/',
-  baseURL: 'http://localhost:8082/',
-  layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings',
-  stylesPanelId: 'com.gsid.sketch.material.styles.13121'
-});
-
-/***/ }),
-
 /***/ "./src/handlers/on-selection-change.js":
 /*!*********************************************!*\
   !*** ./src/handlers/on-selection-change.js ***!
   \*********************************************/
 /*! exports provided: onSelectionChanged */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onSelectionChanged", function() { return onSelectionChanged; });
-/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
-/* harmony import */ var _utils_global_swizzle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/global/swizzle */ "./src/utils/global/swizzle.js");
-
-
-var Settings = __webpack_require__(/*! sketch/settings */ "sketch/settings");
-
-
-function onSelectionChanged(context) {
-  log(context.actionContext); // var threadDictionary = NSThread.mainThread().threadDictionary();
-  // var browserWindow = threadDictionary[CONSTS.layerSettingsPanelId];
-  // if (!browserWindow) {
-  //   return;
-  // }
-  // const action = context.actionContext;
-  // const selection = action.newSelection;
-  // var selecitonLoop = selection.objectEnumerator(),
-  //   sel;
-  // // Swizzle.appendMethod_with('MSOverrideViewController_applyOverrideToSelectedLayers', function (context, args) {
-  // //   log("Should work!!!!!");
-  // // })
-  // while ((sel = selecitonLoop.nextObject())) {
-  //   var settingsJSON = sel.userInfo()[CONSTS.pluginId] || [];
-  //   const meta = Object.keys(settingsJSON).map((k) => {
-  //     return {
-  //       key: k,
-  //       value: settingsJSON[k].replace(/"/g, '')
-  //     };
-  //   });
-  //   log(meta);
-  //   browserWindow.windowObject.evaluateWebScript(
-  //     `window.vm.$store.state.layerMetadata=${JSON.stringify(meta)};`
-  //   );
-  // }
-}
-
-/***/ }),
-
-/***/ "./src/utils/global/swizzle.js":
-/*!*************************************!*\
-  !*** ./src/utils/global/swizzle.js ***!
-  \*************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ({
-  appendMethod_with: function appendMethod_with(method, block) {
-    var components = method.split("_");
-    var methodName = components[1];
-    var className = components[0];
-    this.appendCode_intoMethodWithName_ofClassWithName(block, methodName, className);
-  },
-  appendCode_intoMethodWithName_ofClassWithName: function appendCode_intoMethodWithName_ofClassWithName(block, methodName, className) {
-    var klass = NSClassFromString(className);
-    log(klass);
-
-    if (!klass) {
-      return false;
-    }
-
-    var from = NSSelectorFromString(methodName); // let original = class_getInstanceMethod(klass, from);
-    // if (!original) {
-    //   return false;
-    // }
-    // let originalImp = null;
-    // let replacement = imp_implementationWithBlock(function (_self, argp) {
-    //   // Original implementation
-    //   if (originalImp) {
-    //     originalImp(_self, _cmd, argp);
-    //   }
-    //   block(_self, argp);
-    // });
-    // originalImp = class_replaceMethod(klass, from, replacement, method_getTypeEncoding(original));
-    // if (!originalImp) {
-    //   return false;
-    // }
-    // return true;
-  }
-});
-
-/***/ }),
-
-/***/ "sketch/settings":
-/*!**********************************!*\
-  !*** external "sketch/settings" ***!
-  \**********************************/
-/*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("sketch/settings");
+throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: ENOENT: no such file or directory, open '/Users/gsid/work/sketch/sketch-material/src/handlers/on-selection-change.js'");
 
 /***/ })
 

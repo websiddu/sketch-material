@@ -50,7 +50,12 @@ export class MDPanel {
     Panel.setBackgroundColor(contentBgColor);
     Panel.setWorksWhenModal(true);
 
-    Panel.center();
+    const mainWindowFrame = NSApp.mainWindow().frame();
+    const mainWindowWidth = Number(mainWindowFrame.size.width);
+    const mainWindowHeight = Number(mainWindowFrame.size.height);
+
+    let frameOrgin = NSMakePoint(mainWindowWidth - 240 - this.options.width, mainWindowHeight - 100 - this.options.height);
+    Panel.setFrameOrigin(frameOrgin)
     Panel.makeKeyAndOrderFront(nil);
 
     Panel.becomeKeyWindow();

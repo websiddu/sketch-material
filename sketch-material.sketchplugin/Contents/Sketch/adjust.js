@@ -86,304 +86,10 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/commands/export.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/commands/adjust.js");
 /******/ })
 /************************************************************************/
 /******/ ({
-
-/***/ "./node_modules/@skpm/fs/index.js":
-/*!****************************************!*\
-  !*** ./node_modules/@skpm/fs/index.js ***!
-  \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-// TODO: async. Should probably be done with NSFileHandle and some notifications
-// TODO: file descriptor. Needs to be done with NSFileHandle
-var Buffer = __webpack_require__(/*! buffer */ "buffer").Buffer
-
-function encodingFromOptions(options, defaultValue) {
-  return options && options.encoding
-    ? String(options.encoding)
-    : (
-      options
-        ? String(options)
-        : defaultValue
-    )
-}
-
-module.exports.constants = {
-  F_OK: 0,
-  R_OK: 4,
-  W_OK: 2,
-  X_OK: 1
-}
-
-module.exports.accessSync = function(path, mode) {
-  mode = mode | 0
-  var fileManager = NSFileManager.defaultManager()
-
-  switch (mode) {
-    case 0:
-      canAccess = module.exports.existsSync(path)
-      break
-    case 1:
-      canAccess = Boolean(Number(fileManager.isExecutableFileAtPath(path)))
-      break
-    case 2:
-      canAccess = Boolean(Number(fileManager.isWritableFileAtPath(path)))
-      break
-    case 3:
-      canAccess = Boolean(Number(fileManager.isExecutableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path)))
-      break
-    case 4:
-      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path)))
-      break
-    case 5:
-      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isExecutableFileAtPath(path)))
-      break
-    case 6:
-      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path)))
-      break
-    case 7:
-      canAccess = Boolean(Number(fileManager.isReadableFileAtPath(path))) && Boolean(Number(fileManager.isWritableFileAtPath(path))) && Boolean(Number(fileManager.isExecutableFileAtPath(path)))
-      break
-  }
-
-  if (!canAccess) {
-    throw new Error('Can\'t access ' + String(path))
-  }
-}
-
-module.exports.appendFileSync = function(file, data, options) {
-  if (!module.exports.existsSync(file)) {
-    return module.exports.writeFileSync(file, data, options)
-  }
-
-  var handle = NSFileHandle.fileHandleForWritingAtPath(file)
-  handle.seekToEndOfFile()
-
-  var encoding = encodingFromOptions(options, 'utf8')
-
-  var nsdata = Buffer.from(data, encoding === 'NSData' || encoding === 'buffer' ? undefined : encoding).toNSData()
-
-  handle.writeData(nsdata)
-}
-
-module.exports.chmodSync = function(path, mode) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.setAttributes_ofItemAtPath_error({
-    NSFilePosixPermissions: mode
-  }, path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.copyFileSync = function(path, dest, flags) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.copyItemAtPath_toPath_error(path, dest, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.existsSync = function(path) {
-  var fileManager = NSFileManager.defaultManager()
-  return Boolean(Number(fileManager.fileExistsAtPath(path)))
-}
-
-module.exports.linkSync = function(existingPath, newPath) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.linkItemAtPath_toPath_error(existingPath, newPath, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.mkdirSync = function(path, mode) {
-  mode = mode || 0o777
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.createDirectoryAtPath_withIntermediateDirectories_attributes_error(path, false, {
-    NSFilePosixPermissions: mode
-  }, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.mkdtempSync = function(path) {
-  function makeid() {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for (var i = 0; i < 6; i++)
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-  }
-  var tempPath = path + makeid()
-  module.exports.mkdirSync(tempPath)
-  return tempPath
-}
-
-module.exports.readdirSync = function(path) {
-  var fileManager = NSFileManager.defaultManager()
-  var paths = fileManager.subpathsAtPath(path)
-  var arr = []
-  for (var i = 0; i < paths.length; i++) {
-    arr.push(String(paths[i]))
-  }
-  return arr
-}
-
-module.exports.readFileSync = function(path, options) {
-  var encoding = encodingFromOptions(options, 'buffer')
-  var fileManager = NSFileManager.defaultManager()
-  var data = fileManager.contentsAtPath(path)
-  var buffer = Buffer.from(data)
-
-  if (encoding === 'buffer') {
-    return buffer
-  } else if (encoding === 'NSData') {
-    return buffer.toNSData()
-  } else {
-    return buffer.toString(encoding)
-  }
-}
-
-module.exports.readlinkSync = function(path) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  var result = fileManager.destinationOfSymbolicLinkAtPath_error(path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-
-  return String(result)
-}
-
-module.exports.realpathSync = function(path) {
-  return String(NSString.stringByResolvingSymlinksInPath(path))
-}
-
-module.exports.renameSync = function(oldPath, newPath) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.moveItemAtPath_toPath_error(oldPath, newPath, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.rmdirSync = function(path) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  fileManager.removeItemAtPath_error(path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.statSync = function(path) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  var result = fileManager.attributesOfItemAtPath_error(path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-
-  return {
-    dev: String(result.NSFileDeviceIdentifier),
-    // ino: 48064969, The file system specific "Inode" number for the file.
-    mode: result.NSFileType | result.NSFilePosixPermissions,
-    nlink: Number(result.NSFileReferenceCount),
-    uid: String(result.NSFileOwnerAccountID),
-    gid: String(result.NSFileGroupOwnerAccountID),
-    // rdev: 0, A numeric device identifier if the file is considered "special".
-    size: Number(result.NSFileSize),
-    // blksize: 4096, The file system block size for i/o operations.
-    // blocks: 8, The number of blocks allocated for this file.
-    atimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
-    mtimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
-    ctimeMs: Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000,
-    birthtimeMs: Number(result.NSFileCreationDate.timeIntervalSince1970()) * 1000,
-    atime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5), // the 0.5 comes from the node source. Not sure why it's added but in doubt...
-    mtime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5),
-    ctime: new Date(Number(result.NSFileModificationDate.timeIntervalSince1970()) * 1000 + 0.5),
-    birthtime: new Date(Number(result.NSFileCreationDate.timeIntervalSince1970()) * 1000 + 0.5),
-    isBlockDevice: function() { return result.NSFileType === NSFileTypeBlockSpecial },
-    isCharacterDevice: function() { return result.NSFileType === NSFileTypeCharacterSpecial },
-    isDirectory: function() { return result.NSFileType === NSFileTypeDirectory },
-    isFIFO: function() { return false },
-    isFile: function() { return result.NSFileType === NSFileTypeRegular },
-    isSocket: function() { return result.NSFileType === NSFileTypeSocket },
-    isSymbolicLink: function() { return result.NSFileType === NSFileTypeSymbolicLink },
-  }
-}
-
-module.exports.symlinkSync = function(target, path) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  var result = fileManager.createSymbolicLinkAtPath_withDestinationPath_error(path, target, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.truncateSync = function(path, len) {
-  var hFile = NSFileHandle.fileHandleForUpdatingAtPath(sFilePath)
-  hFile.truncateFileAtOffset(len || 0)
-  hFile.closeFile()
-}
-
-module.exports.unlinkSync = function(path) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  var result = fileManager.removeItemAtPath_error(path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.utimesSync = function(path, aTime, mTime) {
-  var err = MOPointer.alloc().init()
-  var fileManager = NSFileManager.defaultManager()
-  var result = fileManager.setAttributes_ofItemAtPath_error({
-    NSFileModificationDate: aTime
-  }, path, err)
-
-  if (err.value() !== null) {
-    throw new Error(err.value())
-  }
-}
-
-module.exports.writeFileSync = function(path, data, options) {
-  var encoding = encodingFromOptions(options, 'utf8')
-
-  var nsdata = Buffer.from(
-    data, encoding === 'NSData' || encoding === 'buffer' ? undefined : encoding
-  ).toNSData()
-
-  nsdata.writeToFile_atomically(path, true)
-}
-
-
-/***/ }),
 
 /***/ "./node_modules/@skpm/path/index.js":
 /*!******************************************!*\
@@ -949,105 +655,111 @@ module.exports.cwd = function cwd() {
 
 /***/ }),
 
-/***/ "./src/commands/export.js":
+/***/ "./src/commands/adjust.js":
 /*!********************************!*\
-  !*** ./src/commands/export.js ***!
+  !*** ./src/commands/adjust.js ***!
   \********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _skpm_fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @skpm/fs */ "./node_modules/@skpm/fs/index.js");
-/* harmony import */ var _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_skpm_fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _skpm_path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @skpm/path */ "./node_modules/@skpm/path/index.js");
-/* harmony import */ var _skpm_path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_skpm_path__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _utils_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils/index */ "./src/utils/index.js");
-/* harmony import */ var _utils_global_archive__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils/global/archive */ "./src/utils/global/archive.js");
+/* harmony import */ var _utils_index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/index */ "./src/utils/index.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
 
 
 
+var adjustContainer = function adjustContainer(settings, symbol, symbolMaster, options) {
+  var pL = Number(JSON.parse(settings.paddingLeft));
+  var pR = Number(JSON.parse(settings.paddingRight));
+  var pT = Number(JSON.parse(settings.paddingTop));
+  var pB = Number(JSON.parse(settings.paddingBottom));
+  var h = Number(JSON.parse(settings.height));
+  var mW = Number(JSON.parse(settings.maxWidth));
+  var existingOverrides = symbol.overrides() || NSDictionary.dictionary();
+  var overrides = NSMutableDictionary.dictionaryWithDictionary(existingOverrides);
+  var key = overrides.allKeys().objectAtIndex(0);
+  var text = overrides.objectForKey(key);
+  var children = symbolMaster.children();
 
-var library = {};
+  for (var i = 0; i < children.count(); i++) {
+    var layer = children[i];
 
-var updateIndex = function updateIndex() {
-  var cachePath = _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].getPluginCachePath();
-  var indexCachePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(cachePath, 'index.json');
-  _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(indexCachePath, JSON.stringify(library), {
-    encoding: 'utf8'
-  });
-};
+    if (layer.class() == MSTextLayer) {
+      var style = layer.style();
+      var textL = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].addText();
+      textL.setStringValue(text);
+      textL.setStyle(style);
+      var textLRect = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(textL);
+      var symbolRect = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(symbol);
 
-var captureLayerImage = function captureLayerImage(layer, destPath) {
-  var air = layer.absoluteInfluenceRect();
-  var rect = NSMakeRect(air.origin.x, air.origin.y, air.size.width, air.size.height);
-  var exportRequest = MSExportRequest.exportRequestsFromLayerAncestry_inRect_(MSImmutableLayerAncestry.ancestryWithMSLayer_(layer), rect // we pass this to avoid trimming
-  ).firstObject();
-  exportRequest.format = 'png';
-  exportRequest.scale = 2;
+      if (options.flex == 'height') {
+        textL.setTextBehaviour(1);
+        textLRect.setWidth(_utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(symbol).width - pL - pR);
+        textL.adjustFrameToFit();
+        var symbolNewHeight = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(textL).height + pT + pB;
+        symbolRect.setHeight(symbolNewHeight);
+      }
 
-  if (!(layer instanceof MSArtboardGroup || layer instanceof MSSymbolMaster)) {
-    exportRequest.includeArtboardBackground = false;
-  } // exportRequest.shouldTrim = false;
+      if (options.flex == 'width') {
+        var w = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(textL).width;
+        symbolRect.setWidth(w + pL + pR);
+      }
 
-
-  _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].doc().saveArtboardOrSlice_toFile_(exportRequest, destPath);
-};
-
-var exportLayer = function exportLayer(layer, pageName) {
-  var options = {
-    includeDependencies: true,
-    document: _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].doc()
-  };
-  var data = _utils_global_archive__WEBPACK_IMPORTED_MODULE_3__["default"].archiveDataFromSketchObject(layer, options);
-  var cachePath = _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].getPluginCachePath();
-  var layerId = String(layer.objectID());
-  var folder = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(cachePath, pageName);
-  _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].mkdirpSync(folder);
-  var filePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(folder, layerId + '.json');
-  var imagePath = _skpm_path__WEBPACK_IMPORTED_MODULE_1___default.a.join(folder, layerId + '.png');
-  var layerObj = {
-    type: 'layer',
-    id: layerId,
-    name: layer.name(),
-    component: pageName,
-    data: '/static/l/gm/' + pageName + '/' + layerId + '.json',
-    imagePath: '/static/l/gm/' + pageName + '/' + layerId + '.png',
-    width: Number(layer.absoluteInfluenceRect().size.width),
-    height: Number(layer.absoluteInfluenceRect().size.height)
-  };
-  captureLayerImage(layer, imagePath);
-  _skpm_fs__WEBPACK_IMPORTED_MODULE_0___default.a.writeFileSync(filePath, data, {
-    encoding: 'NSData'
-  });
-  if (!library[pageName]) library[pageName] = [];
-  library[pageName].push(layerObj);
-};
-
-var parsePageLayers = function parsePageLayers(page) {
-  var layers = page.layers();
-
-  if (layers.count() > 0) {
-    var layersLoop = layers.objectEnumerator();
-    var layer = null;
-
-    while (layer = layersLoop.nextObject()) {
-      exportLayer(layer, "" + page.name());
+      break;
     }
   }
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (function () {
-  var pages = _utils_index__WEBPACK_IMPORTED_MODULE_2__["default"].doc().documentData().pages();
-  var pagesLoop = pages.objectEnumerator();
-  var page = null;
+  var selection = _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].selection();
 
-  while (page = pagesLoop.nextObject()) {
-    if (page.name().isEqualToString('Symbols')) continue;
-    parsePageLayers(page);
+  if (selection.count() <= 0) {
+    _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].message("Select a layer first");
+    return;
   }
 
-  updateIndex();
+  var selecitonLoop = selection.objectEnumerator(),
+      sel;
+
+  while (sel = selecitonLoop.nextObject()) {
+    var selMaster = sel.symbolMaster();
+
+    if (_utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].hasComponentData(selMaster)) {
+      var settingsJSON = selMaster.userInfo()[_common_constants__WEBPACK_IMPORTED_MODULE_1__["default"].pluginId] || [];
+      var componentType = JSON.parse(settingsJSON['component']);
+      log('❤️️️️️️️❤️❤️❤️❤️❤️❤️❤️❤️❤️');
+      log(componentType);
+
+      switch (componentType) {
+        case 'BUTTON':
+          adjustContainer(settingsJSON, sel, selMaster, {
+            flex: 'width'
+          });
+          break;
+
+        case 'CHIP':
+          adjustContainer(settingsJSON, sel, selMaster, {
+            flex: 'width'
+          });
+          break;
+
+        case 'FAB':
+          adjustContainer(settingsJSON, sel, selMaster, {
+            flex: 'width'
+          });
+          break;
+
+        case 'SNACKBAR':
+          adjustContainer(settingsJSON, sel, selMaster, {
+            flex: 'height'
+          });
+          break;
+      }
+    }
+  }
+
+  _utils_index__WEBPACK_IMPORTED_MODULE_0__["default"].doc().reloadInspector();
 });
 
 /***/ }),
@@ -1067,158 +779,6 @@ __webpack_require__.r(__webpack_exports__);
   baseURL: 'http://localhost:8082/',
   layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings',
   stylesPanelId: 'com.gsid.sketch.material.styles.13121'
-});
-
-/***/ }),
-
-/***/ "./src/utils/global/archive.js":
-/*!*************************************!*\
-  !*** ./src/utils/global/archive.js ***!
-  \*************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modules_doc__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modules/doc */ "./src/utils/modules/doc.js");
-/* harmony import */ var _modules_array__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../modules/array */ "./src/utils/modules/array.js");
-
-
-var SKETCH_47_JSON_FORMAT_VERSION = 95;
-/* harmony default export */ __webpack_exports__["default"] = ({
-  stringFromData: function stringFromData(data) {
-    return NSString.alloc().initWithData_encoding(data, NSUTF8StringEncoding);
-  },
-  dataFromString: function dataFromString(string) {
-    return NSString.stringWithString(string).dataUsingEncoding(NSUTF8StringEncoding);
-  },
-  wrapArchiveDataInHeader: function wrapArchiveDataInHeader(archiveData) {
-    var archiveJSONString = this.stringFromData(archiveData);
-    var archiveJSData = JSON.parse(archiveJSONString);
-    var headerJSData = this.createArchiveHeaderJSData();
-    headerJSData.root = archiveJSData;
-    var archiveWithHeaderJSONString = JSON.stringify(headerJSData);
-    return this.dataFromString(archiveWithHeaderJSONString);
-  },
-  createArchiveHeaderJSData: function createArchiveHeaderJSData() {
-    // Creating a header directly with MSArchiveHeader.new()
-    // results in a header with no properties --- not what we
-    // want. Instead, export a stub object and use the header
-    // from that.
-    var object = MSImmutableLayer.new();
-    var archiveWithHeaderData = MSJSONDataArchiver.archivedDataWithHeaderAndRootObject(object);
-    var archiveWithHeaderJSONString = this.stringFromData(archiveWithHeaderData);
-    var archiveWithHeaderJSData = JSON.parse(archiveWithHeaderJSONString);
-    delete archiveWithHeaderJSData.root;
-    return archiveWithHeaderJSData;
-  },
-  // Unarchive with a known version of the JSON format.
-  sketchObjectFromArchiveJSONUsingFormatVersion: function sketchObjectFromArchiveJSONUsingFormatVersion(jsonString, formatVersion) {
-    return MSJSONDataUnarchiver.unarchiveObjectWithString_asVersion_corruptionDetected_error(jsonString, formatVersion, null, null);
-  },
-  recurseThroughLayers: function recurseThroughLayers(root, fn) {
-    var _this = this;
-
-    fn(root);
-
-    if (root.layers && root.layers()) {
-      root.layers().forEach(function (l) {
-        return _this.recurseThroughLayers(l, fn);
-      });
-    }
-  },
-  getSharedStylesFromContainer: function getSharedStylesFromContainer(layer) {
-    var layerStyledUsed = {};
-    this.recurseThroughLayers(layer, function (l) {
-      var sharedObject = l.sharedObject();
-
-      if (sharedObject) {
-        layerStyledUsed["" + l.sharedStyleID()] = sharedObject.immutableModelObject();
-      }
-    });
-    return layerStyledUsed;
-  },
-  archiveDataFromSketchObject: function archiveDataFromSketchObject(object, options) {
-    var _this2 = this;
-
-    if (options && options.includeDependencies) {
-      if (!options.document) {
-        throw 'Options must include "document" when "includeDependencies" is true';
-      }
-
-      var documentData = options.document.documentData();
-      var symbols = MSPasteboardLayersBase.usedSymbolsInContainer_document(MSLayerArray.arrayWithLayer(object), documentData);
-      var sharedStyles = {}; // In Sketch 48 the symbols are returned as a set of
-      // ids, but what we need is a map of those ids to the
-      // symbols themselves.
-
-      if (symbols.class().isSubclassOfClass(NSSet)) {
-        var symbolsDict = NSMutableDictionary.new();
-        var documentSymbols = _modules_doc__WEBPACK_IMPORTED_MODULE_0__["default"].getDocumentSymbols();
-        _modules_array__WEBPACK_IMPORTED_MODULE_1__["default"].forEach(symbols.allObjects(), function (symbolID) {
-          var symbol = documentSymbols[symbolID].immutableModelObject();
-          symbolsDict.setObject_forKey(symbol, symbolID);
-
-          var styles = _this2.getSharedStylesFromContainer(documentSymbols[symbolID]);
-
-          sharedStyles = Object.assign(sharedStyles, styles);
-        });
-        symbols = symbolsDict;
-      }
-
-      object = NSDictionary.dictionaryWithDictionary({
-        layers: [object.immutableModelObject()],
-        symbols: symbols,
-        sharedStyles: sharedStyles
-      });
-    }
-
-    var immutableObject = object.immutableModelObject();
-    var archiver = MSJSONDataArchiver.new();
-    archiver.setArchiveObjectIDs(true);
-    var archiveData = archiver.archivedDataWithRootObject_error(immutableObject, null);
-    return this.wrapArchiveDataInHeader(archiveData);
-  },
-  sketchObjectFromArchiveData: function sketchObjectFromArchiveData(archiveData) {
-    if (archiveData && archiveData.class().isSubclassOfClass(NSData)) {
-      var jsonString = this.stringFromData(archiveData); // The default format version to use is the one exported
-      // by Sketch 47. This is the last version for which we
-      // did not store the format version so we would know
-      // what to use when unarchiving. This is not exact
-      // because of course customers do not always upgrade at
-      // the same time, but because of backwards compatibility
-      // going back several format versions, it is fine.
-
-      var formatVersion = SKETCH_47_JSON_FORMAT_VERSION;
-      var jsData;
-
-      try {
-        jsData = JSON.parse(jsonString);
-      } catch (err) {
-        jsData = null; // No-op.
-      }
-
-      if (!jsData) {
-        // Format is not JSON, use the keyed unarchiver.
-        return MSKeyedUnarchiver.unarchiveObjectWithData_asVersion_corruptionDetected_error(archiveData, formatVersion, null, null);
-      }
-
-      if (jsData._class === 'MSArchiveHeader') {
-        // If there is a wrapping header, take the format
-        // version from it.
-        formatVersion = jsData.version; // Also unwrap the archive data from the header
-        // because the header throws Sketch off even though it
-        // contains the correct version information.
-
-        jsData = jsData.root;
-      }
-
-      return this.sketchObjectFromArchiveJSONUsingFormatVersion(JSON.stringify(jsData), formatVersion);
-    } else {
-      // Object has already been unarchived.
-      return archiveData;
-    }
-  }
 });
 
 /***/ }),
@@ -1856,17 +1416,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "buffer":
-/*!*************************!*\
-  !*** external "buffer" ***!
-  \*************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("buffer");
-
-/***/ }),
-
 /***/ "sketch/settings":
 /*!**********************************!*\
   !*** external "sketch/settings" ***!
@@ -1898,4 +1447,4 @@ module.exports = require("util");
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=export.js.map
+//# sourceMappingURL=adjust.js.map

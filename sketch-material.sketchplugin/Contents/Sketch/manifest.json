@@ -9,10 +9,12 @@
   "identifier": "com.google.material2.active",
   "commands": [
     {
-      "script": "on-selection-change.js",
+      "script": "actions.js",
       "handlers": {
         "actions": {
-          "SymbolOverrideChanged.finish": "onSelectionChanged"
+          "Startup": "onStartup",
+          "OpenDocument": "onStartup",
+          "SelectionChanged.finish": "onSelectionChanged"
         }
       }
     },
@@ -62,6 +64,11 @@
       "name": "Components...",
       "identifier": "components",
       "script": "styles.js"
+    },
+    {
+      "name": "Adjust",
+      "identifier": "adjust",
+      "script": "adjust.js"
     }
   ],
   "menu": {
@@ -74,9 +81,9 @@
       "data",
       "components",
       "-",
+      "adjust",
       "metadata",
       "-",
-      "strip",
       "export"
     ]
   },

@@ -10,6 +10,5 @@ export default {
         return;
       }
     }
-    return SketchMaterialManager.alloc().init();
   },
 }

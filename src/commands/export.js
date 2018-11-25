@@ -1,24 +1,18 @@
 import fs from "@skpm/fs";
 import path from "@skpm/path";
 
-import CONSTS from "../common/constants";
 import Utils from "../utils/index";
 import Archive from "../utils/global/archive";
 
-// import FrameWork from "../utils/global/load-framework";
-
-let library = [];
+let library = {};
 
 const updateIndex = function () {
   const cachePath = Utils.getPluginCachePath();
   let indexCachePath = path.join(cachePath, 'index.json');
 
-  fs.writeFileSync(indexCachePath,
-    JSON.stringify(Object.assign(library, {
-      archiveVersion: Number(MSArchiveHeader.metadataForNewHeader()['version'])
-    })), {
-      encoding: 'utf8'
-    });
+  fs.writeFileSync(indexCachePath, JSON.stringify(library), {
+    encoding: 'utf8'
+  });
 }
 
 const captureLayerImage = function (layer, destPath) {
@@ -36,7 +30,6 @@ const captureLayerImage = function (layer, destPath) {
   // exportRequest.shouldTrim = false;
   Utils.doc().saveArtboardOrSlice_toFile_(exportRequest, destPath);
 }
-
 
 const exportLayer = function (layer, pageName) {
   const options = {
@@ -58,8 +51,8 @@ const exportLayer = function (layer, pageName) {
     id: layerId,
     name: layer.name(),
     component: pageName,
-    data: filePath,
-    imagePath: imagePath,
+    data: '/static/l/gm/' + pageName + '/' + layerId + '.json',
+    imagePath: '/static/l/gm/' + pageName + '/' + layerId + '.png',
     width: Number(layer.absoluteInfluenceRect().size.width),
     height: Number(layer.absoluteInfluenceRect().size.height),
   }
@@ -70,7 +63,9 @@ const exportLayer = function (layer, pageName) {
     encoding: 'NSData'
   });
 
-  library.push(layerObj);
+  if (!library[pageName]) library[pageName] = [];
+
+  library[pageName].push(layerObj);
 }
 
 

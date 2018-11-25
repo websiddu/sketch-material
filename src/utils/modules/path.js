@@ -6,7 +6,8 @@ export default {
       NSCachesDirectory,
       NSUserDomainMask)[0].path());
     let pluginCacheKey = String(__command.pluginBundle().identifier()); // TODO: escape if needed
-    return path.join(cachePath, pluginCacheKey);
+    // return path.join(cachePath, pluginCacheKey);
+    return '/Users/gsid/work/projects/side/sketch-material/internal/gen/public/static/l/gm';
   },
   mkdirpSync(path, mode) {
     mode = mode || 0o777;

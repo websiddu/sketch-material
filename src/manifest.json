@@ -8,10 +8,12 @@
   "compatibleVersion": "52",
   "identifier": "com.google.material2.active",
   "commands": [{
-      "script": "./handlers/on-selection-change.js",
+      "script": "./handlers/actions.js",
       "handlers": {
         "actions": {
-          "SymbolOverrideChanged.finish": "onSelectionChanged"
+          "Startup": "onStartup",
+          "OpenDocument": "onStartup",
+          "SelectionChanged.finish": "onSelectionChanged"
         }
       }
     },
@@ -61,12 +63,17 @@
       "name": "Components...",
       "identifier": "components",
       "script": "./panels/styles.js"
+    },
+    {
+      "name": "Adjust",
+      "identifier": "adjust",
+      "script": "./commands/adjust.js"
     }
   ],
   "menu": {
     "title": "✨ Sketch Material",
     "items": ["icons", "color", "type", "elevation", "data", "components",
-      "-", "metadata", "-", "strip", "export"
+      "-", "adjust", "metadata", "-", "export"
     ]
   },
   "appcast": "https://raw.githubusercontent.com/websiddu/sketch-material/master/.appcast.xml"
