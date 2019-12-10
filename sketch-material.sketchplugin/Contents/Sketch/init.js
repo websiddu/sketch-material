@@ -101,9 +101,10 @@ var exports =
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
-  baseURL: 'https://google-com-sketch-material.firebaseapp.com/',
-  layerSettingsPanelId: 'com.gsid.sketch.material.layer.settings',
-  stylesPanelId: 'com.gsid.sketch.material.styles.13121'
+  // baseURL: 'https://google-com-sketch-material.firebaseapp.com/',
+  baseURL: "http://127.0.0.1:8082/",
+  layerSettingsPanelId: "com.gsid.sketch.material.layer.settings",
+  stylesPanelId: "com.gsid.sketch.material.styles.13121"
 });
 
 /***/ }),
@@ -371,6 +372,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   convertSvgToSymbol: function convertSvgToSymbol(data) {
+    console.log(data);
     var name = data.name;
     var selectedLayers = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].doc().selectedLayers();
     var existingSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName(name);
@@ -381,7 +383,7 @@ __webpack_require__.r(__webpack_exports__);
       var prefix = "c/";
       var ColorName = data.colorName || prefix + data.colorHex + "/" + data.colorAlpha;
       _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(replaceColor, data.colorHex, data.colorAlpha, ColorName);
-      selectedSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName(name);
+      selectedSymbol = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].findSymbolByName(ColorName);
     }
 
     if (existingSymbol) {
@@ -389,15 +391,45 @@ __webpack_require__.r(__webpack_exports__);
           newSymbolRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(newSymbol),
           droppedElement = selectedLayers.firstLayer(),
           droppedEleRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(droppedElement);
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().removeLayer(droppedElement);
       newSymbol.setConstrainProportions(true);
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().addLayers([newSymbol]);
       newSymbolRect.setX(droppedEleRect.x);
       newSymbolRect.setY(droppedEleRect.y);
-      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().removeLayer(droppedElement);
+      _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().addLayers([newSymbol]);
+      newSymbol.isSelected = true;
+      newSymbol.select_byExpandingSelection(true, false);
       return;
     }
 
+    var draggedLayer = selectedLayers.firstLayer();
+    var draggedLayerRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(draggedLayer);
+    var svgImporter = MSSVGImporter.svgImporter();
+    var svgURL = NSURL.URLWithString(data.url);
+    var svgString = NSString.stringWithContentsOfURL_encoding_error(svgURL, NSUTF8StringEncoding, null);
+    console.log("-------------------------------2");
+    var range = svgString.rangeOfString("</svg>");
+    var path = '<path d="M0 0h24v24H0z" fill="none" />';
+    var hasBoundingBox = svgString.rangeOfString("M0 0h24v24H0z");
+    var mu = NSMutableString.stringWithString(svgString);
+
+    if (hasBoundingBox.length == 0 && range.location != NSNotFound) {
+      mu.insertString_atIndex(path, range.location);
+    }
+
+    svgString = NSString.stringWithString(mu);
+    var svgData = svgString.dataUsingEncoding(NSUTF8StringEncoding);
+    var svgImporter = MSSVGImporter.svgImporter();
+    svgImporter.prepareToImportFromData(svgData);
+    var svgLayer = svgImporter.importAsLayer();
+    svgLayer.setName(name);
+    var svgRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(svgLayer);
+    svgRect.setX(draggedLayerRect.x);
+    svgRect.setY(draggedLayerRect.y);
+    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().addLayers([svgLayer]);
+    _utils__WEBPACK_IMPORTED_MODULE_0__["default"].current().removeLayer(draggedLayer);
+
     if (data.colorValue && data.isGlif) {
+      var subLayers = svgLayer.layers();
       var colorTHex = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].hexToNSColor("#80868B", 1);
       var colorBlack = MSColor.colorWithRed_green_blue_alpha(colorTHex.r, colorTHex.g, colorTHex.b, 1);
       _utils__WEBPACK_IMPORTED_MODULE_0__["default"].makeColorSymbol(colorBlack, "#80868B", 1, "c/grey/600");
@@ -407,8 +439,6 @@ __webpack_require__.r(__webpack_exports__);
       var sRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(blackSymbolInstance);
       sRect.setHeight(24);
       sRect.setWidth(24);
-      var draggedLayer = selectedLayers.firstLayer();
-      var subLayers = draggedLayer.layers();
 
       for (var j = 0; j < subLayers.count(); j++) {
         var layer = subLayers[j];
@@ -418,7 +448,7 @@ __webpack_require__.r(__webpack_exports__);
         }
       }
 
-      subLayers = draggedLayer.layers();
+      subLayers = svgLayer.layers();
 
       for (var j = 0; j < subLayers.count(); j++) {
         var layer = subLayers[j];
@@ -426,10 +456,15 @@ __webpack_require__.r(__webpack_exports__);
         layer.hasClippingMask = true;
       }
 
-      draggedLayer.addLayers([blackSymbolInstance]);
+      svgLayer.addLayers([blackSymbolInstance]);
     }
 
-    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(selectedLayers, name, true);
+    if (name.indexOf("ic/") != 0) {
+      name = "ic/" + name;
+    }
+
+    console.log("-------------------------------3");
+    var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(MSLayerArray.arrayWithLayer(svgLayer), name, true);
     var symbolInstanceRect = _utils__WEBPACK_IMPORTED_MODULE_0__["default"].getRect(symbolInstance);
     symbolInstanceRect.setConstrainProportions(true);
     symbolInstance.overridePoints().forEach(function (overridePoint) {
@@ -698,7 +733,7 @@ function () {
               _first_mouse__WEBPACK_IMPORTED_MODULE_1___default()(webView, contentView);
             }
 
-            if (request == "drag-end") {
+            if (request == "iconDragEnd") {
               _components_icons__WEBPACK_IMPORTED_MODULE_2__["default"].convertSvgToSymbol(sketchData);
             }
 

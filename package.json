@@ -1,6 +1,6 @@
 {
   "name": "sketch-material",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "engines": {
     "sketch": ">=3.0"
   },
@@ -14,7 +14,7 @@
     "watch": "skpm-build --watch",
     "start": "skpm-build --watch --run",
     "postinstall": "npm run build && skpm-link",
-    "publish": "skpm-build && skpm publish patch --repo-url=git@github.com:websiddu/sketch-material.git --allow-same-version"
+    "publish": "skpm-build && skpm publish patch --repo-url=git@github.com:websiddu/sketch-material.git"
   },
   "devDependencies": {
     "@skpm/builder": "^0.5.10",

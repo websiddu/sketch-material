@@ -81,7 +81,7 @@ export class MDPanel {
             firstMouseAcceptor(webView, contentView);
           }
 
-          if (request == "drag-end") {
+          if (request == "iconDragEnd") {
             Icons.convertSvgToSymbol(sketchData);
           }
 

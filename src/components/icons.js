@@ -2,6 +2,8 @@ import Utils from "../utils";
 
 export default {
   convertSvgToSymbol(data) {
+    console.log(data);
+
     var name = data.name;
     var selectedLayers = Utils.doc().selectedLayers();
     var existingSymbol = Utils.findSymbolByName(name);
@@ -27,7 +29,7 @@ export default {
         ColorName
       );
 
-      selectedSymbol = Utils.findSymbolByName(name);
+      selectedSymbol = Utils.findSymbolByName(ColorName);
     }
 
     if (existingSymbol) {
@@ -36,17 +38,54 @@ export default {
         droppedElement = selectedLayers.firstLayer(),
         droppedEleRect = Utils.getRect(droppedElement);
 
-      newSymbol.setConstrainProportions(true);
-
-      Utils.current().addLayers([newSymbol]);
-      newSymbolRect.setX(droppedEleRect.x);
-      newSymbolRect.setY(droppedEleRect.y);
       Utils.current().removeLayer(droppedElement);
 
+      newSymbol.setConstrainProportions(true);
+
+      newSymbolRect.setX(droppedEleRect.x);
+      newSymbolRect.setY(droppedEleRect.y);
+      Utils.current().addLayers([newSymbol]);
+      newSymbol.isSelected = true;
+      newSymbol.select_byExpandingSelection(true, false);
       return;
     }
 
+    var draggedLayer = selectedLayers.firstLayer();
+    var draggedLayerRect = Utils.getRect(draggedLayer);
+
+    var svgImporter = MSSVGImporter.svgImporter();
+    var svgURL = NSURL.URLWithString(data.url);
+
+    var svgString = NSString.stringWithContentsOfURL_encoding_error(
+      svgURL,
+      NSUTF8StringEncoding,
+      null
+    );
+
+    console.log("-------------------------------2");
+
+    var range = svgString.rangeOfString("</svg>");
+    var path = '<path d="M0 0h24v24H0z" fill="none" />';
+    var hasBoundingBox = svgString.rangeOfString("M0 0h24v24H0z");
+    var mu = NSMutableString.stringWithString(svgString);
+    if (hasBoundingBox.length == 0 && range.location != NSNotFound) {
+      mu.insertString_atIndex(path, range.location);
+    }
+    svgString = NSString.stringWithString(mu);
+    var svgData = svgString.dataUsingEncoding(NSUTF8StringEncoding);
+    var svgImporter = MSSVGImporter.svgImporter();
+    svgImporter.prepareToImportFromData(svgData);
+    var svgLayer = svgImporter.importAsLayer();
+    svgLayer.setName(name);
+    var svgRect = Utils.getRect(svgLayer);
+
+    svgRect.setX(draggedLayerRect.x);
+    svgRect.setY(draggedLayerRect.y);
+    Utils.current().addLayers([svgLayer]);
+    Utils.current().removeLayer(draggedLayer);
+
     if (data.colorValue && data.isGlif) {
+      var subLayers = svgLayer.layers();
       var colorTHex = Utils.hexToNSColor("#80868B", 1);
       var colorBlack = MSColor.colorWithRed_green_blue_alpha(
         colorTHex.r,
@@ -63,10 +102,6 @@ export default {
       sRect.setHeight(24);
       sRect.setWidth(24);
 
-      var draggedLayer = selectedLayers.firstLayer();
-
-      var subLayers = draggedLayer.layers();
-
       for (var j = 0; j < subLayers.count(); j++) {
         var layer = subLayers[j];
         if (layer.style().hasEnabledFill() == 0) {
@@ -74,7 +109,7 @@ export default {
         }
       }
 
-      subLayers = draggedLayer.layers();
+      subLayers = svgLayer.layers();
 
       for (var j = 0; j < subLayers.count(); j++) {
         var layer = subLayers[j];
@@ -82,11 +117,17 @@ export default {
         layer.hasClippingMask = true;
       }
 
-      draggedLayer.addLayers([blackSymbolInstance]);
+      svgLayer.addLayers([blackSymbolInstance]);
     }
 
+    if (name.indexOf("ic/") != 0) {
+      name = "ic/" + name;
+    }
+
+    console.log("-------------------------------3");
+
     var symbolInstance = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(
-      selectedLayers,
+      MSLayerArray.arrayWithLayer(svgLayer),
       name,
       true
     );
