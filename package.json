@@ -17,10 +17,10 @@
     "publish": "skpm-build && skpm publish patch --repo-url=git@github.com:websiddu/sketch-material.git"
   },
   "devDependencies": {
-    "@skpm/builder": "^0.5.10",
+    "@skpm/builder": "^0.7.4",
     "@skpm/extract-loader": "^2.0.2",
-    "css-loader": "^1.0.0",
-    "html-loader": "^0.5.1"
+    "css-loader": "^3.3.0",
+    "html-loader": "^0.5.5"
   },
   "resources": [
     "resources/**/*.js"

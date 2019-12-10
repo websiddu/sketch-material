@@ -11,29 +11,29 @@
     {
       "name": "Icons...",
       "identifier": "icons",
-      "script": "init.js",
+      "script": "__init.js",
       "shortcut": "cmd + shift + i"
     },
     {
       "name": "Color...",
       "identifier": "color",
-      "script": "init.js",
+      "script": "__init.js",
       "shortcut": "cmd + shift + c"
     },
     {
       "name": "Typography...",
       "identifier": "type",
-      "script": "init.js"
+      "script": "__init.js"
     },
     {
       "name": "Elevations...",
       "identifier": "elevation",
-      "script": "init.js"
+      "script": "__init.js"
     },
     {
       "name": "Fake data...",
       "identifier": "data",
-      "script": "init.js"
+      "script": "__init.js"
     }
   ],
   "menu": {
