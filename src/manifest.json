@@ -2,7 +2,7 @@
   "bundleVersion": 1,
   "name": "Sketch Material",
   "authorEmail": "me@websiddu.com",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "description": "Sketch material is a sketch plugin that will help you generate complex material components like tables, chips, forms etc…",
   "author": "Siddhartha Gudipati",
   "compatibleVersion": "60",
